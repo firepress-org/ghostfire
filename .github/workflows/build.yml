@@ -40,7 +40,7 @@ jobs:
           actions_threshold: operational
       -
         name: Job preparation | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
       -
         name: Set variables | hardcoded
         # The way we define our variables is very explicit. It makes it easy to add/remove vars
@@ -131,7 +131,7 @@ jobs:
           timezone: America/Montreal
       -
         name: Job preparation | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
       - 
         name: Job preparation | Download variables from artifact
         uses: actions/download-artifact@master
@@ -279,7 +279,7 @@ jobs:
           timezone: America/Montreal
       -
         name: Job preparation | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
       - 
         name: Job preparation | Download variables from artifact
         uses: actions/download-artifact@master
@@ -364,7 +364,7 @@ jobs:
           timezone: America/Montreal
       -
         name: Job preparation | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
       - 
         name: Job preparation | Download variables from artifact
         uses: actions/download-artifact@master
