@@ -192,7 +192,7 @@ jobs:
           password: ${{ secrets.TOKEN_GPR }}
       -
         name: Build and push VERSION_CI tag (limited to linux/amd64)
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v2.4.0
         with:
           context: .
           file: ./${{ env.DOCKERFILE }}
@@ -228,7 +228,7 @@ jobs:
       -
         name: EDGE | buildx and push all tags (limited to linux/amd64)
         if: github.ref == 'refs/heads/edge'
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v2.4.0
         with:
           context: .
           file: ./${{ env.DOCKERFILE }}
@@ -249,7 +249,7 @@ jobs:
       -
         name: MASTER | buildx and push all tags (using multi-platform)
         if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v2.4.0
         with:
           context: .
           file: ./${{ env.DOCKERFILE }}
