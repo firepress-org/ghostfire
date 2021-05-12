@@ -155,7 +155,7 @@ jobs:
           echo "_NOTI_MESSAGE=$(cat ~/varz/_NOTI_MESSAGE)" >> $GITHUB_ENV
       -
         name: Set QEMU for Multi-platform docker builds
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v1.1.0
       - 
         name: EDGE | Set docker Buildx
         if: github.ref == 'refs/heads/edge'
