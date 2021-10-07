@@ -5,8 +5,14 @@
 name: multi_arch
 
 on:
+  push:
+    branches:
+      - "*"
+    paths-ignore:
+      - "CHANGELOG.md"
+  pull_request:
   schedule:
-    - cron: "0 7 * * *"
+    - cron: "0 5 * * *"
   workflow_dispatch:
 
 defaults:
