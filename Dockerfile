@@ -3,8 +3,8 @@
 # These ARG are required during the Github Actions CI
 # ----------------------------------------------
 ARG APP_NAME="ghostfire"
-ARG VERSION="4.17.1"
-ARG RELEASE="4.17.1"
+ARG VERSION="4.17.0"
+ARG RELEASE="4.17.0"
 ARG GITHUB_USER="firepress-org"
 
 ARG GIT_PROJECT_NAME="ghostfire"
@@ -61,13 +61,18 @@ LABEL org.opencontainers.image.authors="Pascal Andy https://firepress.org/en/con
 
 # grab su-exec for easy step-down from root
 # add "bash" for "[["
-RUN set -eux && apk update && apk add --no-cache                  \
-    'su-exec>=0.2' bash curl tzdata                               &&\
+RUN set -eux && apk update && apk add --no-cache                    \
+    'su-exec>=0.2' bash curl tzdata                                 &&\
+# set up pnpm
+    curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm &&\
+    npm install -g pnpm                                             &&\
+    pnpm install &&\
+    which pnpm                                                      &&\
 # set up timezone
-    cp /usr/share/zoneinfo/America/New_York /etc/localtime        &&\
-    echo "America/New_York" > /etc/timezone                       &&\
-    apk del tzdata                                                &&\
-    rm -rvf /var/cache/apk/* /tmp/*                               ;
+    cp /usr/share/zoneinfo/America/New_York /etc/localtime          &&\
+    echo "America/New_York" > /etc/timezone                         &&\
+    apk del tzdata                                                  &&\
+    rm -rvf /var/cache/apk/* /tmp/*                                 ;
 
 # ----------------------------------------------
 # 3) LAYER debug
@@ -84,8 +89,8 @@ RUN apk upgrade
 FROM mynode AS builder
 RUN set -eux                                                      &&\
 # install Ghost CLI
-    npm install --production -g "ghost-cli@${GHOST_CLI_VERSION}"  &&\
-    npm cache clean --force                                       &&\
+    pnpm install --production -g "ghost-cli@${GHOST_CLI_VERSION}"  &&\
+    pnpm cache clean --force                                       &&\
     mkdir -p "${GHOST_INSTALL}"                                   &&\
     chown -R "${USER}":"${USER}" "${GHOST_INSTALL}"               &&\
     \
@@ -140,7 +145,7 @@ RUN set -eux                                                      &&\
     \
     su-exec "${USER}" yarn cache clean                            &&\
     su-exec "${USER}" npm cache clean --force                     &&\
-    npm cache clean --force                                       &&\
+    pnpm cache clean --force                                       &&\
     rm -rv /tmp/yarn* /tmp/v8*                                    ;
 
 # ----------------------------------------------
