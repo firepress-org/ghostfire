@@ -66,6 +66,7 @@ RUN set -eux && apk update && apk add --no-cache                    \
 # set up pnpm
     curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm &&\
     npm install -g pnpm                                             &&\
+    pnpm install &&\
     which pnpm                                                      &&\
 # set up timezone
     cp /usr/share/zoneinfo/America/New_York /etc/localtime          &&\
