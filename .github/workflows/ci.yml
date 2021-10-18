@@ -31,7 +31,7 @@ jobs:
   myvars:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -116,7 +116,7 @@ jobs:
     needs: [myvars]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -203,7 +203,7 @@ jobs:
     needs: [myvars, uat]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -290,7 +290,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -360,7 +360,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -375,7 +375,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -404,7 +404,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -418,7 +418,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -443,7 +443,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -467,7 +467,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -481,7 +481,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -529,7 +529,7 @@ jobs:
     needs: [myvars, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -581,7 +581,7 @@ jobs:
     needs: [myvars, continuous_deployment]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -603,7 +603,7 @@ jobs:
     needs: [myvars, continuous_deployment]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
@@ -622,7 +622,7 @@ jobs:
     needs: [myvars, continuous_deployment]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           fetch-depth: 0
       - uses: zcong1993/setup-timezone@v1.1.1
