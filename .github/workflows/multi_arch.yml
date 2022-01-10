@@ -98,7 +98,7 @@ jobs:
   # ----------------------------------------------
   # UAT
   # ----------------------------------------------
-  uat1_linux/amd64:
+  uat1_linux-amd64:
     needs: [myvars]
     runs-on: ubuntu-latest
     steps:
@@ -124,7 +124,7 @@ jobs:
           platforms: |
             linux/amd64
 
-  uat2_linux/arm64:
+  uat2_linux-arm64:
     needs: [myvars]
     runs-on: ubuntu-latest
     steps:
@@ -147,7 +147,7 @@ jobs:
           platforms: |
             linux/arm64
 
-  uat3_linux/arm/v7:
+  uat3_linux-arm-v7:
     needs: [myvars]
     runs-on: ubuntu-latest
     steps:
@@ -170,7 +170,7 @@ jobs:
           platforms: |
             linux/arm/v7
 
-  uat4_linux/arm/v7:
+  uat4_linux-arm-v8:
     needs: [myvars]
     runs-on: ubuntu-latest
     steps:
@@ -206,7 +206,7 @@ jobs:
   # Tests after build
   # ----------------------------------------------
   review_myvars:
-    needs: [myvars, uat1]
+    needs: [myvars, uat1_linux-amd64]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2.4.0
