@@ -56,14 +56,12 @@ COPY --from=mynode /usr/local/bin/node /usr/local/bin/node
 
 # testing strip
 RUN set -eux                                                      && \
-    apk --update add --no-cache                                   \
-      binutils libstdc++                                          && \
+    apk --update add --no-cache binutils libstdc++                && \
     strip /usr/local/bin/node                                     ;
 
 # testing upx
 RUN set -eux                                                      && \
-    apk --update add --no-cache                                   \
-      upx="3.96-r0"                                               && \
+    apk --update add --no-cache upx                               && \
     upx --lzma /usr/local/bin/node                                && \
     upx -t /usr/local/bin/node                                    ;
 
