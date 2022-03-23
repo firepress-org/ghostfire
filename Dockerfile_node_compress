@@ -20,20 +20,24 @@ ARG GITHUB_REGISTRY="registry"
 # ----------------------------------------------
 ARG GHOST_CLI_VERSION="1.19.0"
 ARG NODE_VERSION="14-alpine3.14"
+ARG ALPINE_VERSION="3.15"
 ARG BASE_OS="alpine"
 ARG USER="node"
 
+
 # ----------------------------------------------
-# 2) LAYER node compressed
+### custom names for base images 
+FROM alpine:${ALPINE_VERSION} as alpinepin
+FROM node:${NODE_VERSION} as nodepin
+
+
+# ----------------------------------------------
+FROM alpinepin AS nodetiny
 #   before node=39.8MO / after node=14.2MO
 #   We copy from node image as it's using alpine.
 #   It creates delta between app versions such upx.
-# ----------------------------------------------
-FROM alpine:3.15 AS nodetiny
 
-ARG NODE_VERSION
-
-COPY --from=node:${NODE_VERSION} /usr/local/bin/node /usr/local/bin/node
+COPY --from=nodepin /usr/local/bin/node /usr/local/bin/node
 
 # testing strip
 RUN set -eux                                                      && \
@@ -47,8 +51,6 @@ RUN set -eux                                                      && \
     upx -t /usr/local/bin/node                                    ;
 
 
-# ----------------------------------------------
-# 2) LAYER to manage base image versioning. Credentials Tõnis Tiigi https://bit.ly/2RoCmvG
 # ----------------------------------------------
 FROM alpine:3.15 AS mynode
 
@@ -67,8 +69,9 @@ ENV GHOST_INSTALL="/var/lib/ghost"          \
   GHOST_CLI_VERSION="${GHOST_CLI_VERSION}"
 
 # copy compressed node binary
-COPY --from=nodetiny --chown=node:node /usr/local/bin/node /usr/bin/
-COPY --from=node:${NODE_VERSION} --chown=node:node /usr/lib/libgcc* /usr/lib/libstdc* /usr/lib/
+COPY --from=nodetiny --chown="${USER}":"${USER}" /usr/local/bin/node /usr/bin/
+
+COPY --from=nodepin --chown="${USER}":"${USER}" /usr/lib/libgcc* /usr/lib/libstdc* /usr/lib/
 COPY --chown="${USER}":"${USER}" docker-entrypoint.sh /usr/local/bin
 
 # credit to https://github.com/opencontainers/image-spec/blob/master/annotations.md
@@ -110,7 +113,7 @@ RUN apk upgrade
 # 4) LAYER builder
 #   from the official Ghost image https://bit.ly/2JWOTam
 # ----------------------------------------------
-FROM mynode AS builder
+FROM nodepin AS builder
 RUN set -eux                                                      &&\
   # install Ghost CLI
   npm install --production -g "ghost-cli@${GHOST_CLI_VERSION}"  &&\
