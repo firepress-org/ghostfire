@@ -58,7 +58,7 @@ COPY --from=mynode /usr/local/bin/node /usr/local/bin/node
 RUN set -eux                                                      && \
     apk --update add --no-cache                                   \
       binutils libstdc++                                          && \
-    strip /usr/bin/node                                           ;
+    strip /usr/local/bin/node                                     ;
 
 # testing upx
 RUN set -eux                                                      && \
