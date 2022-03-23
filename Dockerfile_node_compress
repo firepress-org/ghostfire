@@ -24,8 +24,25 @@ ARG NODE_VERSION="14-alpine3.14"
 ARG BASE_OS="alpine"
 ARG USER="node"
 
+###
 FROM alpine:3.15 AS myalpine
+
+###
 FROM node:${NODE_VERSION} AS mynode
+
+ARG VERSION
+ARG GHOST_CLI_VERSION
+ARG USER
+ARG NODE_VERSION
+ARG ALPINE_VERSION
+
+ENV GHOST_INSTALL="/var/lib/ghost"          \
+  GHOST_CONTENT="/var/lib/ghost/content"  \
+  NODE_ENV="production"                   \
+  USER="${USER}"                          \
+  NODE_VERSION="${NODE_VERSION}"          \
+  VERSION="${VERSION}"                    \
+  GHOST_CLI_VERSION="${GHOST_CLI_VERSION}"
 
 
 # ----------------------------------------------
