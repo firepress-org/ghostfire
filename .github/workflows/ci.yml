@@ -143,7 +143,7 @@ jobs:
 
       - name: Docker meta
         # Introducing the image 2022-03-31_17h41
-        # We already use fancy tags
+        # We already use fancy tags buy I'm keeping an open mind to use them
         id: docker_meta
         uses: docker/metadata-action@v3
         with:
@@ -155,7 +155,6 @@ jobs:
             type=raw,value=${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
             type=ref,event=pr
-            type=ref,event=branch
             type=semver,pattern={{version}}
 
       - name: Build UAT on linux/amd64
@@ -168,8 +167,8 @@ jobs:
           push: true
           # VERSION_BRANCH => even on PR we push branch as "edge"
           tags: |
-            ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+            ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
           # cache issues https://github.com/docker/build-push-action/issues/252
@@ -266,8 +265,8 @@ jobs:
             linux/amd64
           push: true
           tags: |
-            ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+            ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
           # The order for <docker push -tag> matters for our CD down the line
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
@@ -287,8 +286,8 @@ jobs:
           # Don't push on a pull_request
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+            ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
 
@@ -531,7 +530,6 @@ jobs:
             type=raw,value=${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
             type=raw,value=${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
             type=ref,event=pr
             type=semver,pattern={{version}}
 
@@ -556,11 +554,11 @@ jobs:
           body: |
             Docker image tag(s) pushed:
             ```text
-            ${{ steps.meta.outputs.tags }}
+            ${{ steps.docker_meta.outputs.tags }}
             ```
             Labels added to images:
             ```text
-            ${{ steps.meta.outputs.labels }}
+            $${{ steps.docker_meta.outputs.labels }}
             ```
           edit-mode: replace
 
