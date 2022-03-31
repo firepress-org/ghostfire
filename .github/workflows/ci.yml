@@ -151,7 +151,8 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=04
+            type=raw,value=${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+            type=raw,value=${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
             type=ref,event=pr
             type=ref,event=branch
@@ -167,8 +168,6 @@ jobs:
           push: true
           # VERSION_BRANCH => even on PR we push branch as "edge"
           tags: |
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
             ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha, scope=${{ github.workflow }}
@@ -245,10 +244,16 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=04
+            type=raw,value=${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.BRANCH_NAME }}
+            type=raw,value=${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_BRANCH }}
+            type=raw,value=${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_ONLY }}
+            type=raw,value=${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_DATE }}
+            type=raw,value=${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.BRANCH_NAME }}
+            type=raw,value=${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_BRANCH }}
+            type=raw,value=${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_ONLY }}
+            type=raw,value=${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_DATE }}
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
             type=ref,event=pr
-            type=ref,event=branch
             type=semver,pattern={{version}}
 
       - name: Build EDGE and push image
@@ -261,14 +266,6 @@ jobs:
             linux/amd64
           push: true
           tags: |
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.BRANCH_NAME }}
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_BRANCH }}
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_ONLY }}
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_DATE }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.BRANCH_NAME }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_BRANCH }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_ONLY }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_DATE }}
             ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # The order for <docker push -tag> matters for our CD down the line
@@ -290,14 +287,6 @@ jobs:
           # Don't push on a pull_request
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.BRANCH_NAME }}
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_BRANCH }}
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_ONLY }}
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_DATE }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.BRANCH_NAME }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_BRANCH }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_ONLY }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_HASH_DATE }}
             ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha, scope=${{ github.workflow }}
@@ -531,6 +520,21 @@ jobs:
         with:
           timezone: America/Montreal
 
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ needs.myvars.outputs.DKR_PREFIX }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+            type=raw,value=${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+            type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+
       - name: Find comment for image tags
         # If PR, put image tags in the PR comments
         # from https://github.com/marketplace/actions/create-or-update-comment
@@ -552,8 +556,6 @@ jobs:
           body: |
             Docker image tag(s) pushed:
             ```text
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
             ${{ steps.meta.outputs.tags }}
             ```
             Labels added to images:
