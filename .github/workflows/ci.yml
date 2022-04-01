@@ -70,7 +70,6 @@ jobs:
           echo "$(cat ~/varz/BRANCH_NAME)_$(cat ~/varz/VERSION)_$(cat ~/varz/SHORT_HASH_COMMIT)" > ~/varz/VERSION_HASH_ONLY
           echo "$(cat ~/varz/BRANCH_NAME)_$(cat ~/varz/VERSION)_$(cat ~/varz/SHORT_HASH_COMMIT)_$(cat ~/varz/DATE)" > ~/varz/VERSION_HASH_DATE
           echo "$(cat ~/varz/APP_NAME):$(cat ~/varz/BRANCH_NAME)_$(cat ~/varz/VERSION)_$(cat ~/varz/SHORT_HASH_COMMIT)" > ~/varz/_NOTI_MESSAGE
-        # new VAR to test 2022-04-01
           echo "$(cat ~/varz/DKR_PREFIX):$(cat ~/varz/BRANCH_NAME)" > ~/varz/TAG_DKR_BRANCH_NAME
           echo "$(cat ~/varz/DKR_PREFIX):$(cat ~/varz/VERSION_BRANCH)" > ~/varz/TAG_DKR_VERSION_BRANCH
           echo "$(cat ~/varz/DKR_PREFIX):$(cat ~/varz/VERSION_HASH_ONLY)" > ~/varz/TAG_DKR_VERSION_HASH_ONLY
@@ -103,7 +102,6 @@ jobs:
           echo "::set-output name=VERSION_HASH_ONLY::$(cat ~/varz/VERSION_HASH_ONLY)"
           echo "::set-output name=VERSION_HASH_DATE::$(cat ~/varz/VERSION_HASH_DATE)"
           echo "::set-output name=_NOTI_MESSAGE::$(cat ~/varz/_NOTI_MESSAGE)"
-        # new VAR to test 2022-04-01
           echo "::set-output name=TAG_DKR_BRANCH_NAME::$(cat ~/varz/TAG_DKR_BRANCH_NAME)"
           echo "::set-output name=TAG_DKR_VERSION_BRANCH::$(cat ~/varz/TAG_DKR_VERSION_BRANCH)"
           echo "::set-output name=TAG_DKR_VERSION_HASH_ONLY::$(cat ~/varz/TAG_DKR_VERSION_HASH_ONLY)"
@@ -128,7 +126,6 @@ jobs:
       VERSION_HASH_ONLY: ${{ steps.myvars.outputs.VERSION_HASH_ONLY }}
       VERSION_HASH_DATE: ${{ steps.myvars.outputs.VERSION_HASH_DATE }}
       _NOTI_MESSAGE: ${{ steps.myvars.outputs._NOTI_MESSAGE }}
-        # new VAR to test 2022-04-01
       TAG_DKR_BRANCH_NAME: ${{ steps.myvars.outputs.TAG_DKR_BRANCH_NAME }}
       TAG_DKR_VERSION_BRANCH: ${{ steps.myvars.outputs.TAG_DKR_VERSION_BRANCH }}
       TAG_DKR_VERSION_HASH_ONLY: ${{ steps.myvars.outputs.TAG_DKR_VERSION_HASH_ONLY }}
@@ -137,7 +134,6 @@ jobs:
       TAG_GPR_VERSION_BRANCH: ${{ steps.myvars.outputs.TAG_GPR_VERSION_BRANCH }}
       TAG_GPR_VERSION_HASH_ONLY: ${{ steps.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }}
       TAG_GPR_VERSION_HASH_DATE: ${{ steps.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
-  
 
   # ----------------------------------------------
   # UAT
@@ -253,12 +249,12 @@ jobs:
           tags: |
             ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_BRANCH }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_ONLY }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
             ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_BRANCH }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
-        # The order for <docker push -tag> matters for our CD down the line
+          # The order for <docker push -tag> matters for our CD down the line
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
 
       - name: Build MASTER and push image
-      # Master branch should build multi-platform
+        # Master branch should build multi-platform
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v2
         with:
