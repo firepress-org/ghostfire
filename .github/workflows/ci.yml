@@ -247,8 +247,14 @@ jobs:
             linux/amd64
           push: true
           tags: |
-            ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_BRANCH }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_ONLY }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
-            ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_BRANCH }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
+            ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_BRANCH }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_ONLY }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+            ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_BRANCH }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
           # The order for <docker push -tag> matters for our CD down the line
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
@@ -270,8 +276,14 @@ jobs:
           # Don't push on a pull_request
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_BRANCH }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_ONLY }} ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
-            ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_BRANCH }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }} ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
+            ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_BRANCH }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_ONLY }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+            ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_BRANCH }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
 
