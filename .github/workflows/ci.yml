@@ -433,7 +433,7 @@ jobs:
   #   needs: [myvars, build]
   #   uses: firepress-org/reusable_workflows/.github/workflows/super-linter.yaml@master
   review_linter:
-    needs: [myvars, uat, build]
+    needs: [myvars, uat]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -496,15 +496,14 @@ jobs:
           docker buildx imagetools inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | inspect image
         run: |
-          echo "bypass"
-        # docker image inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+          docker inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker images --digests
         run: |
           docker images --digests
       - name: Checkpoint | Show image digest
         run: echo ${{ steps.docker_build_and_push.outputs.digest }}
 
-  add_comment_to_pr:
+  review_comment_pr:
     needs: [myvars, uat, build]
 
     permissions:
@@ -646,7 +645,7 @@ jobs:
           filepath: ./.github/load-test.yml
           #            https://trial.firepress.link/edge
 
-  notify_slack:
+  review_slack:
     needs: [myvars, uat, build, continuous_deployment]
     runs-on: ubuntu-latest
     steps:
