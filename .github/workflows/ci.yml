@@ -168,7 +168,6 @@ jobs:
           push: false
           load: true # Export to Docker Engine rather than pushing to a registry
           tags: ${{ github.run_id }}
-          target: test
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
           platforms: linux/amd64
@@ -629,7 +628,7 @@ jobs:
           temporaryPublicStorage: true # upload lighthouse report to the temporary storage
 
   review_artillery:
-    needs: [myvars, build, continuous_deployment]
+    needs: [myvars, uat, build, continuous_deployment]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
