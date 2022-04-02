@@ -165,21 +165,20 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          push: false
+          load: true # Export to Docker Engine rather than pushing to a registry
+          target: test
           context: .
           file: ./${{ env.DOCKERFILE }}
           platforms: linux/amd64
-          push: true
-          # VERSION_BRANCH => even on PR we push branch as "edge"
-          tags: |
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          tags: ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
           # cache issues https://github.com/docker/build-push-action/issues/252
       - name: Checkpoint | Wait for container to run
         timeout-minutes: 2
         run: |
-          docker run -d --name ghostUAT -p 2368:2368 -e WEB_URL=http://localhost:2368 -e NODE_ENV=production ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          docker run -d --name ghostUAT -p 2368:2368 -e WEB_URL=http://localhost:2368 -e NODE_ENV=production ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
           echo "--- Wait for ghostUAT --->"
           until $(curl --output /dev/null --silent --head --fail http://localhost:2368); do
             echo "--- ghostUAT is starting..."
@@ -193,13 +192,13 @@ jobs:
           curl http://localhost:2368 | grep "Thoughts, stories and ideas"
           git clone --depth 1 https://github.com/docker-library/official-images.git official-images
           cp ./test/config.sh official-images/test/config.sh
-          official-images/test/run.sh ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          official-images/test/run.sh ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
       - name: Checkpoint | docker inspect
         run: |
-          docker inspect ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }} && echo && echo
+          docker inspect ${{ needs.myvars.outputs.VERSION_HASH_DATE }} && echo && echo
       - name: Checkpoint | docker history
         run: |
-          docker history ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }} --no-trunc && echo && echo
+          docker history ${{ needs.myvars.outputs.VERSION_HASH_DATE }} --no-trunc && echo && echo
       - name: Checkpoint | docker info
         run: |
           docker info && echo && echo
@@ -260,20 +259,17 @@ jobs:
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
 
       - name: Build MASTER and push image
-        # Master branch should build multi-platform
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v2
+        # Master branch should build multi-platform
         with:
           context: .
           file: ./${{ env.DOCKERFILE }}
           platforms: |
             linux/amd64
-          # linux/arm64
+            linux/arm64
           # linux/arm/v8
           # linux/arm/v7
-          # It depends on multi_arch.yml
-          #
-          # Don't push on a pull_request
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
@@ -382,7 +378,7 @@ jobs:
           # or you can signup for free at https://snyk.io/login
           SNYK_TOKEN: ${{ secrets.TOKEN_SNYK }}
         with:
-          image: ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          image: ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
           args: --file=${{ env.DOCKERFILE }} --severity-threshold=high
       - name: Checkpoint | Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v1
@@ -409,7 +405,7 @@ jobs:
         continue-on-error: true
         uses: aquasecurity/trivy-action@0.2.2
         with:
-          image-ref: ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          image-ref: ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
           exit-code: 0
           format: table
           ignore-unfixed: true
@@ -435,7 +431,7 @@ jobs:
           timezone: America/Montreal
       - name: Checkpoint | scanner by Dockle
         run: |
-          docker run --rm goodwithtech/dockle:latest ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          docker run --rm goodwithtech/dockle:latest ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
 
   # review_superlinter_call:
   #   needs: [myvars, build]
@@ -476,7 +472,7 @@ jobs:
           timezone: America/Montreal
       - name: Checkpoint | platform(s)
         run: |
-          docker run --rm mplatform/mquery ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          docker run --rm mplatform/mquery ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
 
   review_inspect:
     needs: [myvars, uat, build]
@@ -499,18 +495,12 @@ jobs:
           registry: ghcr.io
           username: ${{ needs.myvars.outputs.GITHUB_ORG }}
           password: ${{ secrets.TOKEN_GPR }}
-      - name: Checkpoint | pull image
-        run: |
-          docker pull ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
-          docker pull ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
       - name: Checkpoint | manifest
         run: |
-          docker buildx imagetools inspect ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
-          docker buildx imagetools inspect ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          docker buildx imagetools inspect ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
       - name: Checkpoint | inspect image
         run: |
-          docker image inspect ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
-          docker image inspect ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+          docker image inspect ${{ needs.myvars.outputs.VERSION_HASH_DATE }}
       - name: Checkpoint | docker images --digests
         run: |
           docker images --digests
@@ -553,8 +543,14 @@ jobs:
           body: |
             Docker image tag(s) pushed:
             ```text
-            ${{ needs.myvars.outputs.DKR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
-            ${{ needs.myvars.outputs.GPR_PREFIX }}:${{ needs.myvars.outputs.VERSION_CI }}
+            ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_BRANCH }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_ONLY }}
+            ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+            ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_BRANCH }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }}
+            ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
             ```
           edit-mode: replace
 
