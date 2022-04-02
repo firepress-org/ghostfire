@@ -496,7 +496,8 @@ jobs:
           docker buildx imagetools inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | inspect image
         run: |
-          docker image inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+          echo "bypass"
+        # docker image inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker images --digests
         run: |
           docker images --digests
