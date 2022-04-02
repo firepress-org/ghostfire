@@ -232,6 +232,7 @@ jobs:
           username: ${{ needs.myvars.outputs.GITHUB_ORG }}
           password: ${{ secrets.TOKEN_GPR }}
 
+      # The difference between EDGE and MASTER: Master branch should build multi-platform while MASTER is limited to linux/amd64
       - name: Build EDGE and push image
         if: github.ref != 'refs/heads/master'
         uses: docker/build-push-action@v2
@@ -257,7 +258,6 @@ jobs:
       - name: Build MASTER and push image
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v2
-        # Master branch should build multi-platform
         with:
           context: .
           file: ./${{ env.DOCKERFILE }}
@@ -374,7 +374,7 @@ jobs:
           # or you can signup for free at https://snyk.io/login
           SNYK_TOKEN: ${{ secrets.TOKEN_SNYK }}
         with:
-          image: ${{ github.run_id }}
+          image: ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
           args: --file=${{ env.DOCKERFILE }} --severity-threshold=high
       - name: Checkpoint | Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v1
@@ -401,7 +401,7 @@ jobs:
         continue-on-error: true
         uses: aquasecurity/trivy-action@0.2.2
         with:
-          image-ref: ${{ github.run_id }}
+          image-ref: ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
           exit-code: 0
           format: table
           ignore-unfixed: true
@@ -427,7 +427,7 @@ jobs:
           timezone: America/Montreal
       - name: Checkpoint | scanner by Dockle
         run: |
-          docker run --rm goodwithtech/dockle:latest ${{ github.run_id }}
+          docker run --rm goodwithtech/dockle:latest ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
 
   # review_superlinter_call:
   #   needs: [myvars, build]
@@ -468,7 +468,7 @@ jobs:
           timezone: America/Montreal
       - name: Checkpoint | platform(s)
         run: |
-          docker run --rm mplatform/mquery ${{ github.run_id }}
+          docker run --rm mplatform/mquery ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
 
   review_inspect:
     needs: [myvars, uat, build]
@@ -493,10 +493,10 @@ jobs:
           password: ${{ secrets.TOKEN_GPR }}
       - name: Checkpoint | manifest
         run: |
-          docker buildx imagetools inspect ${{ github.run_id }}
+          docker buildx imagetools inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | inspect image
         run: |
-          docker image inspect ${{ github.run_id }}
+          docker image inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker images --digests
         run: |
           docker images --digests
