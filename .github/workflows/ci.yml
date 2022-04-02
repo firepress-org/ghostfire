@@ -351,7 +351,7 @@ jobs:
   # if: ${{ github.ref == 'refs/heads/main' }}
   # $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
 
-  review_snyk:
+  review_snyk_opt:
     needs: [myvars, uat, build]
 
     runs-on: ubuntu-latest
@@ -381,7 +381,7 @@ jobs:
         with:
           sarif_file: snyk.sarif
 
-  review_trivy:
+  review_trivy_opt:
     needs: [myvars, uat, build]
 
     #permissions:
@@ -432,8 +432,8 @@ jobs:
   # review_superlinter_call:
   #   needs: [myvars, build]
   #   uses: firepress-org/reusable_workflows/.github/workflows/super-linter.yaml@master
-  review_linter:
-    needs: [myvars, uat]
+  review_linter_opt:
+    needs: [myvars]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
