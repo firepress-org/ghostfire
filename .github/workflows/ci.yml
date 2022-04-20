@@ -171,6 +171,9 @@ jobs:
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
           platforms: linux/amd64
+      - name: Checkpoint docker image ls
+        run: docker image ls --filter since=image-list-marker
+
       - name: Checkpoint | Wait for container to run
         timeout-minutes: 2
         run: |
@@ -239,6 +242,8 @@ jobs:
           # The order for <docker push -tag> matters for our CD down the line
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
+      - name: Checkpoint | docker image ls
+        run: docker image ls --filter since=image-list-marker
 
       - name: Build MASTER and push image
         if: github.ref == 'refs/heads/master'
@@ -263,6 +268,8 @@ jobs:
             ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
+      - name: Checkpoint | docker image ls
+        run: docker image ls --filter since=image-list-marker
 
   # ----------------------------------------------
   # Tests after build
@@ -347,7 +354,7 @@ jobs:
       - uses: zcong1993/setup-timezone@v1.1.2
         with:
           timezone: America/Montreal
-      - name: Checkpoint | scanner by Snyk
+      - name: Checkpoint | Scanner by Snyk
         # https://github.com/snyk/actions/tree/master/docker
         uses: snyk/actions/docker@0.3.0
         # Snyk can be used to break the build when it detects vulnerabilities.
@@ -382,7 +389,7 @@ jobs:
         with:
           timezone: America/Montreal
 
-      - name: Checkpoint | scanner Trivy for HIGH,CRITICAL CVEs and report (blocking)
+      - name: Checkpoint | Scanner Trivy for HIGH,CRITICAL CVEs and report (blocking)
         continue-on-error: true
         uses: aquasecurity/trivy-action@0.2.4
         with:
@@ -410,7 +417,7 @@ jobs:
       - uses: zcong1993/setup-timezone@v1.1.2
         with:
           timezone: America/Montreal
-      - name: Checkpoint | scanner by Dockle
+      - name: Checkpoint | Scanner by Dockle
         run: |
           docker run --rm goodwithtech/dockle:latest ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
 
@@ -441,20 +448,6 @@ jobs:
           DEFAULT_BRANCH: edge
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  review_arch:
-    needs: [myvars, uat, build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: zcong1993/setup-timezone@v1.1.2
-        with:
-          timezone: America/Montreal
-      - name: Checkpoint | platform(s)
-        run: |
-          docker run --rm mplatform/mquery ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
-
   review_inspect:
     needs: [myvars, uat, build]
     runs-on: ubuntu-latest
@@ -476,9 +469,9 @@ jobs:
           registry: ghcr.io
           username: ${{ needs.myvars.outputs.GITHUB_ORG }}
           password: ${{ secrets.TOKEN_GPR }}
-      - name: Checkpoint | docker inspect
+      - name: Checkpoint | See platforms
         run: |
-          docker inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+          docker run --rm mplatform/mquery ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker history
         run: |
           docker history ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }} --no-trunc
