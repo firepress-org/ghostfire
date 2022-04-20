@@ -242,9 +242,6 @@ jobs:
           # The order for <docker push -tag> matters for our CD down the line
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
-      - name: Checkpoint | docker image ls
-        if: github.ref != 'refs/heads/master'
-        run: docker image ls --filter since=image-list-marker
 
       - name: Build MASTER and push image
         if: github.ref == 'refs/heads/master'
@@ -269,9 +266,9 @@ jobs:
             ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
+
       - name: Checkpoint | docker image ls
-        if: github.ref == 'refs/heads/master'
-        run: docker image ls --filter since=image-list-marker
+        run: docker image ls
 
   # ----------------------------------------------
   # Tests after build
