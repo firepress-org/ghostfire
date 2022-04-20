@@ -171,8 +171,6 @@ jobs:
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
           platforms: linux/amd64
-      - name: Checkpoint docker image ls
-        run: docker image ls --filter since=image-list-marker
 
       - name: Checkpoint | Wait for container to run
         timeout-minutes: 2
