@@ -269,6 +269,7 @@ jobs:
         run: docker image ls
       - name: Checkpoint | docker history
         run: |
+          docker pull ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
           docker history --human ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
 
   # ----------------------------------------------
