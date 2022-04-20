@@ -471,7 +471,7 @@ jobs:
           docker run --rm mplatform/mquery ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker history
         run: |
-          docker history ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }} --no-trunc
+          docker history --no-trunc ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker info
         run: |
           docker info
