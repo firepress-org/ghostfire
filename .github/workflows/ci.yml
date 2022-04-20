@@ -243,6 +243,7 @@ jobs:
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
       - name: Checkpoint | docker image ls
+        if: github.ref != 'refs/heads/master'
         run: docker image ls --filter since=image-list-marker
 
       - name: Build MASTER and push image
@@ -269,6 +270,7 @@ jobs:
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
       - name: Checkpoint | docker image ls
+        if: github.ref == 'refs/heads/master'
         run: docker image ls --filter since=image-list-marker
 
   # ----------------------------------------------
