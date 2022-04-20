@@ -189,21 +189,6 @@ jobs:
           git clone --depth 1 https://github.com/docker-library/official-images.git official-images
           cp ./test/config.sh official-images/test/config.sh
           official-images/test/run.sh ${{ github.run_id }}
-      - name: Checkpoint | docker inspect
-        run: |
-          docker inspect ${{ github.run_id }} && echo && echo
-      - name: Checkpoint | docker history
-        run: |
-          docker history ${{ github.run_id }} --no-trunc && echo && echo
-      - name: Checkpoint | docker info
-        run: |
-          docker info && echo && echo
-      - name: Checkpoint | docker version
-        run: |
-          docker version && echo && echo
-      - name: Checkpoint | uname
-        run: |
-          uname -a && echo && echo
 
   # ----------------------------------------------
   # build | QEMU docs setup-qemu-action https://github.com/firepress-org/ghostfire/issues/44
@@ -263,7 +248,7 @@ jobs:
           file: ./${{ env.DOCKERFILE }}
           platforms: |
             linux/amd64
-            linux/arm64
+            linux/arm64/v8
           # linux/arm/v8
           # linux/arm/v7
           push: ${{ github.event_name != 'pull_request' }}
@@ -491,18 +476,26 @@ jobs:
           registry: ghcr.io
           username: ${{ needs.myvars.outputs.GITHUB_ORG }}
           password: ${{ secrets.TOKEN_GPR }}
-      - name: Checkpoint | manifest
+      - name: Checkpoint | docker inspect
         run: |
-          docker buildx imagetools inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
-      - name: Checkpoint | inspect image
+          docker inspect ${{ github.run_id }} && echo && echo
+      - name: Checkpoint | docker history
         run: |
-          echo "bypass see https://github.com/firepress-org/ghostfire/issues/178"
-        #docker inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+          docker history ${{ github.run_id }} --no-trunc && echo && echo
+      - name: Checkpoint | docker info
+        run: |
+          docker info && echo && echo
+      - name: Checkpoint | docker version
+        run: |
+          docker version && echo && echo
       - name: Checkpoint | docker images --digests
         run: |
           docker images --digests
       - name: Checkpoint | Show image digest
         run: echo ${{ steps.docker_build_and_push.outputs.digest }}
+      - name: Checkpoint | uname
+        run: |
+          uname -a && echo && echo
 
   # ----------------------------------------------
   # continuous_deployment after build
