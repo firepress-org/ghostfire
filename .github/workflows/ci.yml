@@ -351,7 +351,7 @@ jobs:
         with:
           timezone: America/Montreal
       - name: Checkpoint | Azure Container Scan
-        continue-on-error: false
+        continue-on-error: true
         uses: azure/container-scan@v0
         with:
           image-name: ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
@@ -491,6 +491,9 @@ jobs:
       - name: Checkpoint | docker inspect
         run: |
           docker inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+      - name: Checkpoint | docker image inspect
+        run: |
+          docker image inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker info
         run: |
           docker info
