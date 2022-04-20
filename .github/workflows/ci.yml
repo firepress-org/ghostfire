@@ -481,16 +481,15 @@ jobs:
           registry: ghcr.io
           username: ${{ needs.myvars.outputs.GITHUB_ORG }}
           password: ${{ secrets.TOKEN_GPR }}
+      - name: Checkpoint | docker pull
+        run: |
+          docker pull ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | See platforms
         run: |
           docker run --rm mplatform/mquery ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker history
         run: |
-          docker pull ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
           docker history --human ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
-      - name: Checkpoint | docker inspect
-        run: |
-          docker inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker image inspect
         run: |
           docker image inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
