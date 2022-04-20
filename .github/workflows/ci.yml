@@ -478,21 +478,16 @@ jobs:
           password: ${{ secrets.TOKEN_GPR }}
       - name: Checkpoint | docker inspect
         run: |
-          docker inspect ${{ github.run_id }} && echo && echo
+          docker inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker history
         run: |
-          docker history ${{ github.run_id }} --no-trunc && echo && echo
+          docker history ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }} --no-trunc
       - name: Checkpoint | docker info
         run: |
-          docker info && echo && echo
+          docker info
       - name: Checkpoint | docker version
         run: |
-          docker version && echo && echo
-      - name: Checkpoint | docker images --digests
-        run: |
-          docker images --digests
-      - name: Checkpoint | Show image digest
-        run: echo ${{ steps.docker_build_and_push.outputs.digest }}
+          docker version
       - name: Checkpoint | uname
         run: |
           uname -a && echo && echo
