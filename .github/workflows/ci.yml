@@ -267,10 +267,6 @@ jobs:
 
       - name: Checkpoint | docker image ls
         run: docker image ls
-      - name: Checkpoint | docker history
-        run: |
-          docker pull ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
-          docker history --human ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
 
   # ----------------------------------------------
   # Tests after build
@@ -472,6 +468,13 @@ jobs:
       - name: Checkpoint | See platforms
         run: |
           docker run --rm mplatform/mquery ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+      - name: Checkpoint | docker history
+        run: |
+          docker pull ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+          docker history --human ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+      - name: Checkpoint | docker inspect
+        run: |
+          docker inspect ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
       - name: Checkpoint | docker info
         run: |
           docker info
