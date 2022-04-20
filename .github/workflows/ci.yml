@@ -355,6 +355,8 @@ jobs:
         uses: azure/container-scan@v0
         with:
           image-name: ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
+          exit-code: 0
+          format: table
 
   review_snyk_opt:
     needs: [myvars, uat, build]
