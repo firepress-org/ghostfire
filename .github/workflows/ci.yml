@@ -1,4 +1,4 @@
-# The beauty of our CI setup is that it will build Dockerfile and set variables from the Dockerfile
+# The beauty of our CI setup is that it will build Dockerfile and set variables from the Dockerfile.
 # by https://pascalandy.com at https://firepress.org
 # GNU v3 https://github.com/firepress-org/ghostfire/blob/master/LICENSE
 
@@ -10,9 +10,11 @@ on:
       - "ci"
     # Sequence of patterns matched against TAGS
     tags:
+      - "[0-9]*"
+      - "ci_*"
     paths-ignore:
       - "CHANGELOG.md"
-    # Sequence of patterns matched against PR
+    # Sequence of patterns matched against every PR
   pull_request:
   schedule:
     - cron: "0 5 * * *"
