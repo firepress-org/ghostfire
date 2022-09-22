@@ -5,8 +5,8 @@
 name: ci-v4
 
 on:
-  # Sequence of patterns matched against every PR
-  pull_request:
+  # bypass on pull request, just use schedule
+  # pull_request:
   schedule:
     - cron: "0 5 * * *"
   push:
