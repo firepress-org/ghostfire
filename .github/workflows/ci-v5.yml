@@ -12,12 +12,12 @@ on:
       - 'master'
       - 'main'
       - 'releases/**'
+    # don't rebuild image if someone only edited unrelated files
     paths-ignore:
       - 'README.md'
       - '.github/linters/**'
   push:
     tags:
-      - "[0-9]*"
     # don't rebuild image if someone only edited unrelated files
   workflow_dispatch:
 
