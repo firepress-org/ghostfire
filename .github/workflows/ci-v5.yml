@@ -227,7 +227,6 @@ jobs:
           password: ${{ secrets.TOKEN_GPR }}
 
       - name: Build and push image
-        if: github.ref != 'refs/heads/master'
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -243,7 +242,6 @@ jobs:
             ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
             ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_ONLY }}
             ${{ needs.myvars.outputs.TAG_DKR_VERSION_HASH_DATE }}
-
             ${{ needs.myvars.outputs.TAG_GPR_VERSION }}
             ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }}
             ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }}
