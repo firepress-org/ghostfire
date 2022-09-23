@@ -8,17 +8,10 @@ on:
   schedule:
     - cron: '0 10 * * *' # everyday at 10am
   pull_request:
-    branches:
-      - 'master'
-      - 'main'
-      - 'releases/**'
-    # don't rebuild image if someone only edited unrelated files
-    paths-ignore:
-      - 'README.md'
-      - '.github/linters/**'
+    branches: [ master, main ]
   push:
+    branches: [ master, main ]
     tags:
-    # don't rebuild image if someone only edited unrelated files
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
