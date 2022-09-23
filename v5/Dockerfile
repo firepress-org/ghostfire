@@ -81,16 +81,17 @@ RUN apk upgrade
 #   from the official Ghost image https://bit.ly/2JWOTam
 # ----------------------------------------------
 FROM mynode AS builder
-RUN set -eux                                                    &&\
-  # install Ghost CLI
-  npm install --production -g "ghost-cli@${GHOST_CLI_VERSION}"  &&\
-  npm cache clean --force                                       &&\
-  mkdir -p "${GHOST_INSTALL}"                                   &&\
-  chown -R "${USER}":"${USER}" "${GHOST_INSTALL}"               &&\
+
+RUN set -eux; \
+	npm install -g "ghost-cli@$GHOST_CLI_VERSION"; \
+	npm cache clean --force ; \
+	\
+	mkdir -p "$GHOST_INSTALL"; \
+	chown node:node "$GHOST_INSTALL"; \
 	\
 	apkDel=; \
 	\
-	installCmd='su-exec node ghost install "$GHOST_VERSION" --db mysql --dbhost mysql --no-prompt --no-stack --no-setup --dir "$GHOST_INSTALL"'; \
+	installCmd='su-exec node ghost install "$VERSION" --db mysql --dbhost mysql --no-prompt --no-stack --no-setup --dir "$GHOST_INSTALL"'; \
 	if ! eval "$installCmd"; then \
 		virtual='.build-deps-ghost'; \
 		apkDel="$apkDel $virtual"; \
@@ -111,15 +112,13 @@ RUN set -eux                                                    &&\
 	mv "$GHOST_CONTENT" "$GHOST_INSTALL/content.orig"; \
 	mkdir -p "$GHOST_CONTENT"; \
 	chown node:node "$GHOST_CONTENT"; \
-	chmod 1777 "$GHOST_CONTENT";
-
+	chmod 1777 "$GHOST_CONTENT"; \
+	\
 # force install a few extra packages manually since they're "optional" dependencies
 # (which means that if it fails to install, like on ARM/ppc64le/s390x, the failure will be silently ignored and thus turn into a runtime error instead)
 # see https://github.com/TryGhost/Ghost/pull/7677 for more details
 #
 # We have a RUN step here as sqlite cause trouble and it's easier to confirm where the build crash.
-#
-RUN set -eux                                                    &&\
 	cd "$GHOST_INSTALL/current"; \
 # scrape the expected versions directly from Ghost/dependencies
 	packages="$(node -p ' \
