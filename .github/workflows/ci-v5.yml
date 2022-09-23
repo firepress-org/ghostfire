@@ -42,9 +42,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: '0'
-      - uses: zcong1993/setup-timezone@v1.1.2
-        with:
-          timezone: 'America/Montreal'
       - name: Define and save variables to disk
         # we are forcing tag 'edge' while debugging the CI 0o0o
         run: |
