@@ -5,21 +5,20 @@
 name: ci-v5
 
 on:
-  push:
-    branches:
-      - master
-    # don't rebuild image if someone only edited unrelated files
-    paths-ignore:
-      - 'README.md'
-      - '.github/linters/**'
-  pull_request:
-    # don't rebuild image if someone only edited unrelated files
-    paths-ignore:
-      - 'README.md'
-      - "CHANGELOG.md"
-      - '.github/linters/**'
   schedule:
-    - cron: "0 5 * * *"
+    - cron: '0 10 * * *' # everyday at 10am
+  pull_request:
+    branches:
+      - 'master'
+      - 'main'
+      - 'releases/**'
+    paths-ignore:
+      - 'README.md'
+      - '.github/linters/**'
+  push:
+    tags:
+      - "[0-9]*"
+    # don't rebuild image if someone only edited unrelated files
   workflow_dispatch:
 
 env:
