@@ -27,7 +27,7 @@ env:
 
 defaults:
   run:
-    shell: "bash"
+    shell: 'bash'
     # works within 'run' but not with 'uses'
     working-directory: v5
 
