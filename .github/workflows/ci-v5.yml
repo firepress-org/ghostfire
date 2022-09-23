@@ -32,7 +32,7 @@ env:
 
 jobs:
   # ----------------------------------------------
-  # SET VARIABLES.
+  # SET VARIABLES
   # More context about the way we set variables https://github.com/firepress-org/ghostfire/issues/46
   # ----------------------------------------------
   myvars:
