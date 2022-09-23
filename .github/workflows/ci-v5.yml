@@ -51,18 +51,9 @@ jobs:
           overall_threshold: minor
           git_threshold: degraded_performance
           actions_threshold: operational
-      - name: Create dir for our varz
-        run: mkdir -pv ~/varz
-      - name: EDGE | Set BRANCH_NAME
-        if: github.ref != 'refs/heads/master'
-        run: |
-          echo "edge" > ~/varz/BRANCH_NAME
-      - name: MASTER | Set BRANCH_NAME
-        if: github.ref == 'refs/heads/master'
-        run: |
-          echo "stable" > ~/varz/BRANCH_NAME
       - name: Define and save variables to disk
         run: |
+          mkdir -pv ~/varz && echo "edge" > ~/varz/BRANCH_NAME
           cat Dockerfile | grep APP_NAME= | head -n 1 | grep -o '".*"' | sed 's/"//g' > ~/varz/APP_NAME
           cat Dockerfile | grep VERSION= | head -n 1 | grep -o '".*"' | sed 's/"//g' > ~/varz/VERSION
           cat Dockerfile | grep DOCKERHUB_USER= | head -n 1 | grep -o '".*"' | sed 's/"//g' > ~/varz/DOCKERHUB_USER
