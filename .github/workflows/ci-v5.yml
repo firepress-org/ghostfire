@@ -46,14 +46,8 @@ jobs:
       - uses: zcong1993/setup-timezone@v1.1.2
         with:
           timezone: America/Montreal
-      - name: Github Actions system status
-        uses: crazy-max/ghaction-github-status@v3.0.0
-        with:
-          overall_threshold: minor
-          git_threshold: operational
-          actions_threshold: operational
-      # TODO - we are forcing tag 'edge' while debugging the CI
       - name: Define and save variables to disk
+        # we are forcing tag 'edge' while debugging the CI 0o0o
         run: |
           mkdir -pv ~/varz
           echo "edge" > ~/varz/BRANCH_NAME
