@@ -6,7 +6,7 @@
 # pull_request branch = lts_v4
 # not push for standalone tags: edge or stable
 
-name: Ghost v4
+name: Ghost V4 alpine
 
 on:
   schedule:
