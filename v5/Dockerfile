@@ -4,6 +4,7 @@
 # ----------------------------------------------
 ARG APP_NAME="ghostfire"
 ARG VERSION="5.33.1"
+
 ARG GITHUB_USER="firepress-org"
 ARG DEFAULT_BRANCH="master"
 # remove ORG
