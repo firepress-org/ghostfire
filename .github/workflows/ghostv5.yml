@@ -16,7 +16,7 @@ on:
       - "5.*.*"
     paths-ignore:
       - "**.md"
-# branches: [master, main]
+  # branches: [master, main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -433,7 +433,7 @@ jobs:
           echo "${RUNNER_TOOL_CACHE} << RUNNER_TOOL_CACHE"
           echo "${GITHUB_ACTIONS} << GITHUB_ACTIONS"
 
-# review_snyk_opt:
+  # review_snyk_opt:
 
   review_trivy_opt:
     needs: [myvars, build_stable, cd_stable]
@@ -575,7 +575,36 @@ jobs:
           uploadArtifacts: true # save results as an action artifacts
           temporaryPublicStorage: true # upload lighthouse report to the temporary storage
 
+  # https://www.artillery.io/docs/cicd/github-actions
+
   review_artillery:
+    needs: [myvars, build_stable, cd_stable]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: zcong1993/setup-timezone@v2.0.0
+        with:
+          timezone: America/Montreal
+
+      - name: Make reports directory
+        run: mkdir reports
+
+      - name: Execute load tests
+        run: /home/node/artillery/bin/run run --output reports/report.json ./.github/load-test.yml
+
+      - name: Generate HTML report
+        run: /home/node/artillery/bin/run report --output reports/report reports/report.json
+
+      - name: Archive test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: artillery-test-report
+          path: reports/*
+
+  review_artillery_old:
     needs: [myvars, build_stable, cd_stable]
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
