@@ -171,6 +171,8 @@ WORKDIR "${GHOST_INSTALL}"
 VOLUME "${GHOST_CONTENT}"
 USER "${USER}"
 EXPOSE 2368
+HEALTHCHECK --start-interval=10s --interval=5s --retries=5 --timeout=10s \
+	CMD curl --fail http://localhost:2368/ghost/api/admin/site/ || exit 1
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]
 CMD [ "node", "current/index.js" ]
