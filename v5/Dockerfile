@@ -172,5 +172,6 @@ VOLUME "${GHOST_CONTENT}"
 USER "${USER}"
 EXPOSE 2368
 
+# comment here
 ENTRYPOINT [ "docker-entrypoint.sh" ]
 CMD [ "node", "current/index.js" ]
