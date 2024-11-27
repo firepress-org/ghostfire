@@ -226,6 +226,18 @@ jobs:
       - name: Checkpoint | image ls
         run: docker image ls
 
+      - name: Docker Scout Edge
+        id: docker-scout-edge
+        uses: docker/scout-action@v1
+        with:
+          command: compare
+          image: node:18.20.5-alpine3.20
+          to: ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
+          ignore-unchanged: true
+          only-severities: critical,high,medium,low
+          write-comment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }} # to be able to write the comment
+
   build_stable:
     needs: [myvars]
     if: github.ref_type == 'tag'
