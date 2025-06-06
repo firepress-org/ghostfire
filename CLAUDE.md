@@ -16,7 +16,7 @@ Ghostfire is a Docker containerization project for Ghost CMS, maintained by Fire
 
 ## Development Commands
 
-## When pushing a PR
+### When creating a PR
 
 Use cli `gh`
 
