@@ -344,18 +344,6 @@ jobs:
         with:
           timezone: America/Montreal
 
-      - name: Deploy to stable instance
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.NODE1 }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY_ACTIONS }}
-          passphrase: ${{ secrets.SSH_KEY_ACTIONS_PASSPHRASE }}
-          script: |
-            ${{ secrets.SSH_CMD__UPDATE_DKR_IMG_STABLE }}
-            hostname
-
       - name: Add a comment (from a tag)
         run: |
           echo "## For reference (from a tag)" >> $GITHUB_STEP_SUMMARY
