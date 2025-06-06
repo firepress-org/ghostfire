@@ -344,7 +344,7 @@ jobs:
         with:
           timezone: America/Montreal
 
-      - name: cd stable
+      - name: Deploy to stable instance
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.NODE1 }}
