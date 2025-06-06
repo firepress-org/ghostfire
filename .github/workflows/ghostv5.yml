@@ -8,7 +8,7 @@ on:
   schedule:
     - cron: "0 5 * * *" # everyday at 7am
   pull_request:
-    branches: [master, main]
+    branches: [master]
     paths:
       - "v5/**"
       - ".github/workflows/**"
@@ -17,7 +17,7 @@ on:
       - "5.*.*"
     paths-ignore:
       - "**.md"
-  # branches: [master, main]
+    branches: [master]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
