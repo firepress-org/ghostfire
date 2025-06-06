@@ -16,7 +16,16 @@ Ghostfire is a Docker containerization project for Ghost CMS, maintained by Fire
 
 ## Development Commands
 
+## When pushing a PR
+
+Use cli `gh`
+
+```shell
+gh pr create --repo firepress-org/ghostfire --title "Your PR Title" --body "Your PR description"
+```
+
 ### Docker Operations
+
 ```bash
 # Build current version
 docker build -t ghostfire:test v5/
@@ -33,6 +42,7 @@ docker run -d --name ghostblog -p 2368:2368 \
 ```
 
 ### Testing
+
 ```bash
 # Run tests (from v5/test/)
 cd v5/test && ./config.sh
@@ -41,6 +51,7 @@ cd v5/test && ./config.sh
 ## Architecture
 
 ### Directory Structure
+
 - `v5/` - Current production version (Ghost 5.x)
   - `Dockerfile` - Multi-stage build configuration
   - `config.production.json` - Ghost configuration template
@@ -51,18 +62,21 @@ cd v5/test && ./config.sh
 ### Key Design Patterns
 
 **Multi-stage Docker Build**:
+
 1. `mynode` - Base Node.js environment with gosu and timezone setup
 2. `debug` - Package version debugging layer
 3. `builder` - Ghost installation and native dependency compilation
 4. `final` - Minimal runtime image with only necessary components
 
 **Security Model**:
+
 - Runs as non-root `node` user
 - Uses `gosu` for secure privilege dropping
 - Implements proper file ownership and permissions
 - Volume mounts for persistent data at `/var/lib/ghost/content`
 
 **Optimization Strategy**:
+
 - Conditional native dependency installation (sharp, sqlite3)
 - Aggressive cleanup of build dependencies and caches
 - Virtual package management for temporary build tools
@@ -71,6 +85,7 @@ cd v5/test && ./config.sh
 ### Configuration Management
 
 Ghost configuration is handled via `config.production.json` with these key areas:
+
 - Database connection (SQLite default path: `/var/lib/ghost/content/data/ghost.db`)
 - Mail configuration (SMTP/Mailgun template provided)
 - Logging with rotation (7-day retention, 5-day rotation)
@@ -79,6 +94,7 @@ Ghost configuration is handled via `config.production.json` with these key areas
 ### CI/CD Pipeline
 
 The GitHub Actions workflow (`ghostv5.yml`) implements:
+
 - Multi-architecture builds
 - Security scanning (Snyk, Dockle, Trivy)
 - Lighthouse audits
@@ -95,6 +111,7 @@ The GitHub Actions workflow (`ghostv5.yml`) implements:
 ### Volume Mounts and Persistence
 
 Critical paths for data persistence:
+
 - `/var/lib/ghost/content` - All Ghost content, themes, uploads
 - `/var/lib/ghost/config.production.json` - Runtime configuration
 - `/var/lib/ghost/content/logs` - Application logs
