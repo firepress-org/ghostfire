@@ -1,12 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 
-# lets include .env for this project
-#.env
-#.env.test
-#.env.production
-
-
 ### Node ###
 # Logs
 logs
@@ -128,12 +122,12 @@ dist
 
 # End of https://www.toptal.com/developers/gitignore/api/node
 
-
 # Files
 ############
 .bashcheck.sh
 var-config.sh
 bashlava_help.md
+CLAUDE.md
 
 # Directories
 ############
