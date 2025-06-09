@@ -200,8 +200,8 @@ jobs:
           # This configuration intentionally uses the SAME cache reference for both jobs.
           # The goal is for the 'stable' build (triggered by a tag) to reuse the
           # layers already created by the 'edge' build on the master branch.
-          cache-from: type=registry,ref=${{ needs.myvars.outputs.GPR_PREFIX }}:buildcache-${{ env.SUB_DIR }}
-          cache-to: type=registry,ref=${{ needs.myvars.outputs.GPR_PREFIX }}:buildcache-${{ env.SUB_DIR }},mode=max
+          cache-from: type=registry,ref=${{ needs.myvars.outputs.GPR_PREFIX }}:buildcache-${{ env.SUB_DIR }}-${{ github.run_id }}
+          cache-to: type=registry,ref=${{ needs.myvars.outputs.GPR_PREFIX }}:buildcache-${{ env.SUB_DIR }}-${{ github.run_id }},mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
           network: host
@@ -291,8 +291,8 @@ jobs:
             ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }}
             ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }}
             ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
-          cache-from: type=registry,ref=${{ needs.myvars.outputs.GPR_PREFIX }}:buildcache-${{ env.SUB_DIR }}
-          cache-to: type=registry,ref=${{ needs.myvars.outputs.GPR_PREFIX }}:buildcache-${{ env.SUB_DIR }},mode=max
+          cache-from: type=registry,ref=${{ needs.myvars.outputs.GPR_PREFIX }}:buildcache-${{ env.SUB_DIR }}-${{ github.run_id }}
+          cache-to: type=registry,ref=${{ needs.myvars.outputs.GPR_PREFIX }}:buildcache-${{ env.SUB_DIR }}-${{ github.run_id }},mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
           network: host
