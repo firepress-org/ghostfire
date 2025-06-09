@@ -100,9 +100,6 @@ RUN apk upgrade
 # ----------------------------------------------
 FROM mynode AS builder
 
-# Use bash for shell commands, and fail builds if any command in a pipeline fails.
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 RUN set -eux; \
 	npm install -g "ghost-cli@$GHOST_CLI_VERSION"; \
 	npm cache clean --force; \
