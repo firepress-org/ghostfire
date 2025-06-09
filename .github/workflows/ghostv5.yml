@@ -185,7 +185,7 @@ jobs:
       - name: Build and push image (edge)
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./${{ env.SUB_DIR }}
           file: ./${{ env.SUB_DIR }}/Dockerfile
           platforms: |
             linux/amd64
@@ -197,10 +197,15 @@ jobs:
             ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
             ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }}
           # The order for <docker push -tag> matters for our CD down the line
-          cache-from: type=gha, scope=${{ github.workflow }}
-          cache-to: type=gha, scope=${{ github.workflow }}, mode=max
+          cache-from: |
+            type=gha,scope=${{ github.workflow }}-edge
+            type=gha,scope=${{ github.workflow }}-shared
+          cache-to: |
+            type=gha,scope=${{ github.workflow }}-edge,mode=max
+            type=gha,scope=${{ github.workflow }}-shared,mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
+            BUILDKIT_INLINE_CACHE=1
           network: host
 
       - name: UAT run edge | Wait for container to run
@@ -270,7 +275,7 @@ jobs:
       - name: Build and push image (stable)
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./${{ env.SUB_DIR }}
           file: ./${{ env.SUB_DIR }}/Dockerfile
           platforms: |
             linux/amd64
@@ -288,10 +293,16 @@ jobs:
             ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_ONLY }}
             ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
           # The order for <docker push -tag> matters for our CD down the line
-          cache-from: type=gha, scope=${{ github.workflow }}
-          cache-to: type=gha, scope=${{ github.workflow }}, mode=max
+          cache-from: |
+            type=gha,scope=${{ github.workflow }}-stable
+            type=gha,scope=${{ github.workflow }}-shared
+            type=gha,scope=${{ github.workflow }}-edge
+          cache-to: |
+            type=gha,scope=${{ github.workflow }}-stable,mode=max
+            type=gha,scope=${{ github.workflow }}-shared,mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
+            BUILDKIT_INLINE_CACHE=1
           network: host
 
       - name: UAT run stable | Wait for container to run
