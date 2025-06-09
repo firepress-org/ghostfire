@@ -200,9 +200,7 @@ jobs:
           cache-from: |
             type=gha,scope=${{ github.workflow }}-edge
             type=gha,scope=${{ github.workflow }}-shared
-          cache-to: |
-            type=gha,scope=${{ github.workflow }}-edge,mode=max
-            type=gha,scope=${{ github.workflow }}-shared,mode=max
+          cache-to: type=gha,scope=${{ github.workflow }}-edge,mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
             BUILDKIT_INLINE_CACHE=1
@@ -295,11 +293,8 @@ jobs:
           # The order for <docker push -tag> matters for our CD down the line
           cache-from: |
             type=gha,scope=${{ github.workflow }}-stable
-            type=gha,scope=${{ github.workflow }}-shared
             type=gha,scope=${{ github.workflow }}-edge
-          cache-to: |
-            type=gha,scope=${{ github.workflow }}-stable,mode=max
-            type=gha,scope=${{ github.workflow }}-shared,mode=max
+          cache-to: type=gha,scope=${{ github.workflow }}-stable,mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
             BUILDKIT_INLINE_CACHE=1
