@@ -193,7 +193,7 @@ jobs:
           # linux/arm/v8
           # linux/arm/v7
           push: true
-          # The order for <docker push -tag> matters for our CD down the line
+          # The order for `docker push -tag` matters for our CD down the line
           tags: |
             ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
             ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }}
@@ -281,7 +281,7 @@ jobs:
           # linux/arm/v8
           # linux/arm/v7
           push: true
-          # The order for <docker push -tag> matters for our CD down the line
+          # The order for `docker push -tag` matters for our CD down the line
           tags: |
             ${{ needs.myvars.outputs.TAG_DKR_VERSION }}
             ${{ needs.myvars.outputs.TAG_DKR_BRANCH_NAME }}
