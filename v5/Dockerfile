@@ -100,7 +100,7 @@ RUN apk upgrade
 # ----------------------------------------------
 FROM mynode AS builder
 
-# Use bash for shell commands, and fail builds if any command in a pipeline fails
+# Use bash for shell commands, and fail builds if any command in a pipeline fails.
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN set -eux; \
