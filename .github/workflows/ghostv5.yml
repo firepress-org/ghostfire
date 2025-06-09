@@ -206,7 +206,6 @@ jobs:
             type=gha,scope=${{ github.workflow }}-common,mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
-            BUILDKIT_INLINE_CACHE=1
           network: host
 
       - name: UAT run edge | Wait for container to run
@@ -303,7 +302,6 @@ jobs:
             type=gha,scope=${{ github.workflow }}-common,mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
-            BUILDKIT_INLINE_CACHE=1
           network: host
 
       - name: UAT run stable | Wait for container to run
