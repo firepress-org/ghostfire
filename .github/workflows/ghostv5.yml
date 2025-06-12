@@ -182,6 +182,37 @@ jobs:
           username: ${{ needs.myvars.outputs.GITHUB_ORG }}
           password: ${{ github.actor == 'dependabot[bot]' && secrets.TOKEN_GPR || secrets.TOKEN_GPR }}
 
+      - name: Generate cache keys
+        id: cache-key
+        run: |
+          # Extract versions from Dockerfile
+          GHOST_VERSION=$(grep 'ARG VERSION=' ${{ env.SUB_DIR }}/Dockerfile | head -n 1 | cut -d'"' -f2)
+          GHOST_CLI_VERSION=$(grep 'ARG GHOST_CLI_VERSION=' ${{ env.SUB_DIR }}/Dockerfile | head -n 1 | cut -d'"' -f2)
+          NODE_VERSION=$(grep 'ARG NODE_VERSION=' ${{ env.SUB_DIR }}/Dockerfile | head -n 1 | cut -d'"' -f2)
+          
+          # Generate Dockerfile content hash
+          DOCKERFILE_HASH=$(sha256sum ${{ env.SUB_DIR }}/Dockerfile | cut -d' ' -f1 | cut -c1-12)
+          
+          # Create composite dependency hash
+          DEPS_STRING="${GHOST_VERSION}-${GHOST_CLI_VERSION}-${NODE_VERSION}"
+          DEPS_HASH=$(echo -n "$DEPS_STRING" | sha256sum | cut -d' ' -f1 | cut -c1-12)
+          
+          # Output cache keys
+          echo "ghost-version=$GHOST_VERSION" >> $GITHUB_OUTPUT
+          echo "ghost-cli-version=$GHOST_CLI_VERSION" >> $GITHUB_OUTPUT
+          echo "node-version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "dockerfile-hash=$DOCKERFILE_HASH" >> $GITHUB_OUTPUT
+          echo "deps-hash=$DEPS_HASH" >> $GITHUB_OUTPUT
+          echo "deps-string=$DEPS_STRING" >> $GITHUB_OUTPUT
+          
+          # Log for debugging
+          echo "Cache keys generated:"
+          echo "  Ghost: $GHOST_VERSION"
+          echo "  Ghost CLI: $GHOST_CLI_VERSION"
+          echo "  Node: $NODE_VERSION"
+          echo "  Dockerfile hash: $DOCKERFILE_HASH"
+          echo "  Dependencies hash: $DEPS_HASH"
+
       - name: Build and push image (edge)
         uses: docker/build-push-action@v6
         with:
@@ -198,12 +229,27 @@ jobs:
             ${{ needs.myvars.outputs.TAG_GPR_BRANCH_NAME }}
           # The order for <docker push -tag> matters for our CD down the line
           cache-from: |
+            type=gha,scope=${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-${{ github.ref_name }}
+            type=gha,scope=${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-master
             type=gha,scope=${{ github.workflow }}-${{ github.ref_name }}
             type=gha,scope=${{ github.workflow }}-master
-          cache-to: type=gha,scope=${{ github.workflow }}-${{ github.ref_name }},mode=max
+          cache-to: type=gha,scope=${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-${{ github.ref_name }},mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
           network: host
+
+      - name: Cache strategy summary
+        run: |
+          echo "## Docker Build Cache Strategy" >> $GITHUB_STEP_SUMMARY
+          echo "**Dependency Hash:** \`${{ steps.cache-key.outputs.deps-hash }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Dependencies:** ${{ steps.cache-key.outputs.deps-string }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Dockerfile Hash:** \`${{ steps.cache-key.outputs.dockerfile-hash }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Cache Lookup Order:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. \`${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. \`${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-master\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. \`${{ github.workflow }}-${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "4. \`${{ github.workflow }}-master\`" >> $GITHUB_STEP_SUMMARY
 
       - name: UAT run edge | Wait for container to run
         timeout-minutes: 2
@@ -269,6 +315,37 @@ jobs:
           username: ${{ needs.myvars.outputs.GITHUB_ORG }}
           password: ${{ github.actor == 'dependabot[bot]' && secrets.TOKEN_GPR || secrets.TOKEN_GPR }}
 
+      - name: Generate cache keys
+        id: cache-key
+        run: |
+          # Extract versions from Dockerfile
+          GHOST_VERSION=$(grep 'ARG VERSION=' ${{ env.SUB_DIR }}/Dockerfile | head -n 1 | cut -d'"' -f2)
+          GHOST_CLI_VERSION=$(grep 'ARG GHOST_CLI_VERSION=' ${{ env.SUB_DIR }}/Dockerfile | head -n 1 | cut -d'"' -f2)
+          NODE_VERSION=$(grep 'ARG NODE_VERSION=' ${{ env.SUB_DIR }}/Dockerfile | head -n 1 | cut -d'"' -f2)
+          
+          # Generate Dockerfile content hash
+          DOCKERFILE_HASH=$(sha256sum ${{ env.SUB_DIR }}/Dockerfile | cut -d' ' -f1 | cut -c1-12)
+          
+          # Create composite dependency hash
+          DEPS_STRING="${GHOST_VERSION}-${GHOST_CLI_VERSION}-${NODE_VERSION}"
+          DEPS_HASH=$(echo -n "$DEPS_STRING" | sha256sum | cut -d' ' -f1 | cut -c1-12)
+          
+          # Output cache keys
+          echo "ghost-version=$GHOST_VERSION" >> $GITHUB_OUTPUT
+          echo "ghost-cli-version=$GHOST_CLI_VERSION" >> $GITHUB_OUTPUT
+          echo "node-version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "dockerfile-hash=$DOCKERFILE_HASH" >> $GITHUB_OUTPUT
+          echo "deps-hash=$DEPS_HASH" >> $GITHUB_OUTPUT
+          echo "deps-string=$DEPS_STRING" >> $GITHUB_OUTPUT
+          
+          # Log for debugging
+          echo "Cache keys generated:"
+          echo "  Ghost: $GHOST_VERSION"
+          echo "  Ghost CLI: $GHOST_CLI_VERSION"
+          echo "  Node: $NODE_VERSION"
+          echo "  Dockerfile hash: $DOCKERFILE_HASH"
+          echo "  Dependencies hash: $DEPS_HASH"
+
       - name: Build and push image (stable)
         uses: docker/build-push-action@v6
         with:
@@ -291,12 +368,27 @@ jobs:
             ${{ needs.myvars.outputs.TAG_GPR_VERSION_HASH_DATE }}
           # The order for <docker push -tag> matters for our CD down the line
           cache-from: |
+            type=gha,scope=${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-${{ github.ref_name }}
+            type=gha,scope=${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-master
             type=gha,scope=${{ github.workflow }}-${{ github.ref_name }}
             type=gha,scope=${{ github.workflow }}-master
-          cache-to: type=gha,scope=${{ github.workflow }}-${{ github.ref_name }},mode=max
+          cache-to: type=gha,scope=${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-${{ github.ref_name }},mode=max
           build-args: |
             BUILDKIT_PROGRESS=plain
           network: host
+
+      - name: Cache strategy summary
+        run: |
+          echo "## Docker Build Cache Strategy" >> $GITHUB_STEP_SUMMARY
+          echo "**Dependency Hash:** \`${{ steps.cache-key.outputs.deps-hash }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Dependencies:** ${{ steps.cache-key.outputs.deps-string }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Dockerfile Hash:** \`${{ steps.cache-key.outputs.dockerfile-hash }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Cache Lookup Order:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. \`${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. \`${{ github.workflow }}-${{ steps.cache-key.outputs.deps-hash }}-master\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. \`${{ github.workflow }}-${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "4. \`${{ github.workflow }}-master\`" >> $GITHUB_STEP_SUMMARY
 
       - name: UAT run stable | Wait for container to run
         timeout-minutes: 2
