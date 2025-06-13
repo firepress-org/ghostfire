@@ -182,8 +182,34 @@ RUN set -eux; \
 	npm cache clean --force; \
 	rm -rv /tmp/yarn* /tmp/v8*
 
+# Pre-initialize Ghost content for distroless compatibility
+# This replaces the functionality of docker-entrypoint.sh for distroless runtime
+RUN set -eux; \
+	cd "$GHOST_INSTALL"; \
+	if [ -d "content.orig" ]; then \
+		echo "Pre-initializing Ghost content for distroless runtime..."; \
+		# Copy default content if target doesn't exist \
+		for src in content.orig/*/ content.orig/themes/*; do \
+			if [ -d "$src" ]; then \
+				src="${src%/}"; \
+				target="$GHOST_CONTENT/${src#*/content.orig/}"; \
+				mkdir -p "$(dirname "$target")"; \
+				if [ ! -e "$target" ]; then \
+					echo "Copying $src to $target"; \
+					cp -r "$src" "$target"; \
+				fi; \
+			fi; \
+		done; \
+		# Set proper ownership for distroless nonroot user (UID 65532) \
+		chown -R 65532:65532 "$GHOST_CONTENT"; \
+		chown -R 65532:65532 "$GHOST_INSTALL"; \
+		echo "Content initialization completed for distroless runtime"; \
+	else \
+		echo "Warning: content.orig directory not found, skipping content initialization"; \
+	fi
+
 # ----------------------------------------------
-# 5) LAYER final
+# 5) LAYER final (Alpine-based - kept for compatibility)
 # ----------------------------------------------
 FROM mynode AS final
 
@@ -199,3 +225,51 @@ EXPOSE 2368
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]
 CMD [ "node", "current/index.js" ]
+
+# ----------------------------------------------
+# 6) LAYER distroless (Production runtime)
+# ----------------------------------------------
+FROM gcr.io/distroless/nodejs20-debian12 AS distroless
+
+ARG VERSION
+ARG GHOST_CLI_VERSION
+ARG NODE_VERSION
+
+# Set environment variables for distroless runtime
+ENV GHOST_INSTALL="/var/lib/ghost" \
+    GHOST_CONTENT="/var/lib/ghost/content" \
+    NODE_ENV="production" \
+    VERSION="${VERSION}" \
+    GHOST_CLI_VERSION="${GHOST_CLI_VERSION}" \
+    NODE_VERSION="${NODE_VERSION}"
+
+# Add labels for distroless image
+LABEL org.opencontainers.image.authors="Pascal Andy https://firepress.org/en/contact/" \
+    org.opencontainers.image.vendor="https://firepress.org/" \
+    org.opencontainers.image.title="Ghost (Distroless)" \
+    org.opencontainers.image.description="Distroless Docker image for Ghost ${VERSION}" \
+    org.opencontainers.image.url="https://hub.docker.com/r/devmtl/ghostfire/tags/" \
+    org.opencontainers.image.source="https://github.com/firepress-org/ghostfire" \
+    org.opencontainers.image.licenses="GNUv3 https://github.com/pascalandy/GNU-GENERAL-PUBLIC-LICENSE/blob/master/LICENSE.md" \
+    com.firepress.image.ghost_cli_version="${GHOST_CLI_VERSION}" \
+    com.firepress.image.user="nonroot" \
+    com.firepress.image.node_env="${NODE_ENV}" \
+    com.firepress.image.node_version="${NODE_VERSION}" \
+    com.firepress.image.base_os="distroless" \
+    com.firepress.image.schema_version="1.0"
+
+# Copy Ghost installation from builder stage with nonroot ownership
+COPY --from=builder --chown=nonroot:nonroot "${GHOST_INSTALL}" "${GHOST_INSTALL}"
+
+# Set working directory and volume
+WORKDIR "${GHOST_INSTALL}"
+VOLUME "${GHOST_CONTENT}"
+
+# Use nonroot user (UID 65532) for security
+USER nonroot
+
+# Expose Ghost port
+EXPOSE 2368
+
+# Direct Node.js execution (no shell entrypoint needed in distroless)
+CMD ["node", "current/index.js"]
