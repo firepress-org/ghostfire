@@ -9,8 +9,8 @@ default:
 # Build the Dockerfile into ghostfire:local
 build:
     podman build --format docker -f Dockerfile -t ghostfire:local \
-        --build-arg VCS_REF="$(git rev-parse --short HEAD)" \
-        --build-arg BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" .
+        --label org.opencontainers.image.revision="$(git rev-parse --short HEAD)" \
+        --label org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%SZ)" .
 
 # Boot IMAGE on SQLite and probe the home page and the admin
 test *args:

@@ -49,8 +49,6 @@ RUN yarn add "sqlite3@$(node -p 'require("./package.json").optionalDependencies.
 FROM gcr.io/distroless/nodejs22-debian13:nonroot@sha256:10747a1323be68f206aed893599d43e6697ad67257e7c42703553f99fbce3d33
 
 ARG GHOST_VERSION
-ARG VCS_REF=unknown
-ARG BUILD_DATE=unknown
 
 ENV NODE_ENV=production
 
@@ -68,11 +66,12 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 CMD ["/usr/local/lib/ghostfire/start.mjs"]
 
+# `just build` sets org.opencontainers.image.revision and .created with
+# --label: Buildah reuses a cached LABEL layer even when a build argument
+# in it changes.
 LABEL org.opencontainers.image.title="ghostfire" \
 	org.opencontainers.image.description="Ghost ${GHOST_VERSION} on Node 22, on a distroless runtime" \
 	org.opencontainers.image.version="${GHOST_VERSION}" \
-	org.opencontainers.image.revision="${VCS_REF}" \
-	org.opencontainers.image.created="${BUILD_DATE}" \
 	org.opencontainers.image.source="https://github.com/firepress-org/ghostfire" \
 	org.opencontainers.image.url="https://hub.docker.com/r/devmtl/ghostfire" \
 	org.opencontainers.image.vendor="FirePress" \
