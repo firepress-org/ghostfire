@@ -216,3 +216,7 @@ TheVolumeSettingsFolder
 .FBCIndex
 .FBCSemaphoreFile
 .FBCLockFolder
+
+# Local loop output: scan reports from `just scan`
+############
+.cache/
