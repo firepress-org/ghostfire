@@ -1,7 +1,8 @@
 version: 2
 updates:
-  # One grouped PR a month bumps the digests of the two base images. After it
-  # merges, a release tag with -N ships the fix, such as 5.130.6-2.
+  # Dependabot checks the digests of the two base images once a month, in one
+  # group. After its PR merges, a release tag with -N, such as 5.130.6-2,
+  # ships the update.
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
