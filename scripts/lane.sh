@@ -63,6 +63,12 @@ config=$src/config.production.json
 	exit 2
 }
 
+# A lane must never reach a real database: only SQLite, on the scratch copy.
+client=$(jq -r '.database.client // "sqlite3"' "$config")
+[[ $client == sqlite3 ]] || {
+	echo "lane: $config uses the database client $client; lanes run only SQLite sites" >&2
+	exit 2
+}
 url=$(jq -er .url "$config")
 proto=${url%%://*}
 rest=${url#*://}
@@ -80,7 +86,10 @@ cleanup() {
 trap cleanup EXIT
 
 echo "lane: $lane, image $image, url $url, container $name"
-cp -a "$src/content" "$work/content"
+# Copy the contents, not the directory, so a symlinked content root cannot
+# send writes back to the lane data.
+mkdir "$work/content"
+cp -a "$src/content/." "$work/content/"
 # keep-id:uid=1000 maps the host user to UID 1000, so the container can write
 # the copy whatever the host UID is.
 # Ghost logs at info so the migrations show; the site config sets the rest.
