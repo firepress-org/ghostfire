@@ -1,0 +1,65 @@
+# Publish the image only when a release tag is pushed. The tag is the Ghost
+# version, such as 5.130.6, or the version and -N, such as 5.130.6-2, for a
+# rebuild with new base images. The job pushes the image that `just check`
+# tested, then signs its build provenance.
+name: release
+
+on:
+  push:
+    tags:
+      - "5.*.*"
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read # check out the repository
+      id-token: write # sign the provenance with the run's OIDC token
+      attestations: write # store the attestation
+      artifact-metadata: write # record the registry that holds the image
+    env:
+      REPO: docker.io/devmtl/ghostfire
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # A release must not restore tools from a cache that another run wrote.
+      - uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
+        with:
+          cache: false
+
+      - run: just check
+
+      # Podman reads this login from ~/.docker/config.json.
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - id: push
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          just push
+          echo "digest=$(cat .cache/push/digest)" >>"$GITHUB_OUTPUT"
+
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ env.REPO }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+      - uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: devmtl/ghostfire
+          readme-filepath: README.md

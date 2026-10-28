@@ -1,6 +1,9 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
 # test, lane, and scan read IMAGE from the environment; the default is ghostfire:local.
+# push and promote act on REPO.
+
+export REPO := env("REPO", "docker.io/devmtl/ghostfire")
 
 # List the recipes
 default:
@@ -24,13 +27,15 @@ lane name *args:
 scan:
     scripts/scan.sh --gate
 
-# Lint the Dockerfile, the scripts, and the justfile
+# Lint the Dockerfile, the scripts, the workflows, and the justfile
 lint:
     hadolint Dockerfile
     node --check rootfs/usr/local/lib/ghostfire/start.mjs
     node --check rootfs/usr/local/lib/ghostfire/healthcheck.mjs
     shellcheck scripts/*.sh
     shfmt -d scripts
+    actionlint
+    zizmor .github/workflows
     just --fmt --check --unstable
 
 # Run lint, build, test, and scan, in that order
@@ -40,3 +45,15 @@ check: _local lint build test scan
 # check tests and scans the image it builds, so IMAGE must name that image
 _local:
     @[[ ${IMAGE:-ghostfire:local} == ghostfire:local ]] || { echo "check: IMAGE is $IMAGE; unset it, since check tests and scans the ghostfire:local it builds" >&2; exit 2; }
+
+# Print the tags of a release of HEAD; TAG, when set, must match the Ghost version
+tags:
+    scripts/tags.sh ${TAG:+--tag "$TAG"}
+
+# Push ghostfire:local to REPO under the release tags; the digest goes to .cache/push/digest
+push:
+    scripts/push.sh
+
+# Point stable at the digest of a tag in REPO; the operator runs it from a workstation
+promote tag:
+    digest="$(crane digest "$REPO:{{ tag }}")"; crane tag "$REPO@$digest" stable; echo "promote: $REPO:stable -> $digest"

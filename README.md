@@ -19,7 +19,7 @@
 # [ghostfire](https://github.com/firepress-org/ghostfire)
 
 <!-- Build Status -->
-[![Build Status](https://img.shields.io/github/actions/workflow/status/firepress-org/ghostfire/ghostv5.yml?branch=master&label=Ghost%20V5%20alpine%20stable)](https://github.com/firepress-org/ghostfire/actions/workflows/ghostv5.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/firepress-org/ghostfire/release.yml?label=release)](https://github.com/firepress-org/ghostfire/actions/workflows/release.yml)
 
 <!-- Docker Metrics -->
 [![Docker Pulls](https://img.shields.io/docker/pulls/devmtl/ghostfire)](https://hub.docker.com/r/devmtl/ghostfire)
@@ -77,20 +77,18 @@ The image is about 620 MB.
 
 <br>
 
-## GitHub Actions CI/CD :
+## Release flow :
 
-- [x] **Builds**: `linux/amd64` only
-- [x] **Comprehensive security scanning**: Snyk, Dockle, Trivy vulnerability detection
-- [x] **Performance testing**: Lighthouse audits (localhost and online)
-- [x] **Quality assurance**: Linting using `super-linter`
-- [x] **Automated deployment**: Continuous deployment to Docker Swarm clusters
-- [x] **Smart caching**: Build cache optimization for faster CI/CD
-- [x] **Notification system**: Slack notifications for build status
-- [x] **Shared variables**: Efficient job coordination and data sharing
-- [x] **Best practices**: Following [enterprise DevOps standards](https://firepress.org/en/how-do-we-update-hundreds-of-ghosts-websites-on-docker-swarm/)
-- [x] **Extreme visibility**: Comprehensive logging and monitoring during builds
+`.github/workflows/release.yml` runs only when a tag such as `5.130.6` is pushed. It runs one job on `ubuntu-24.04`, for `linux/amd64`, with Podman:
 
-![CI_2021-10-03_17h42](https://user-images.githubusercontent.com/6694151/135772462-0c39fe73-be9e-4aa3-8103-b1c849c0c41f.jpg)
+1. It installs the tools pinned in `mise.toml`, then runs `just check`
+2. It logs in to Docker Hub, then runs `just push`, which pushes the image that `just check` tested
+3. It signs the build provenance of the pushed digest with `actions/attest`
+4. It copies this README to the Docker Hub description
+
+A merge to `master` publishes nothing. The workflow never moves `stable`.
+
+A fix to a base image ships as a rebuild. Dependabot opens one grouped PR a month for the base-image digests, and one for the GitHub Actions. After the base-image PR merges, push the next `-N` tag of the same Ghost version, such as `5.130.6-1`, then `5.130.6-2`.
 
 <br>
 
@@ -162,28 +160,20 @@ docker inspect --format '{{.State.Health.Status}}' ghostblog
 
 Do not add a health check that runs `curl` or a shell: the image has neither. To change the timing, set only `--health-interval`, `--health-timeout`, `--health-retries`, or `--health-start-period`, and keep the image's test. In a Compose file, leave out the `healthcheck` block.
 
-#### master branch (stable) tags 🐳
+## Tags
 
-For the **stable** branch, I recommend using the tag from the **first line**:
+Each release pushes three tags:
 
 ```
-devmtl/ghostfire:stable_5.120.4_<hash>_<date>
-devmtl/ghostfire:stable_5.120.4
-devmtl/ghostfire:stable
+devmtl/ghostfire:5.130.6_<sha7>_<date>   # never moves; pin this one
+devmtl/ghostfire:5.130.6                 # the latest build of 5.130.6
+devmtl/ghostfire:edge                    # the latest release
 ```
+
+`stable` moves only when the maintainer runs `just promote <tag>`, after the release has run well on a real site. A `-N` rebuild pushes a new `5.130.6_<sha7>_<date>` tag and moves `5.130.6` and `edge`.
 
 Find the latest tags on **DockerHub** here:
 [https://hub.docker.com/r/devmtl/ghostfire/tags/](https://hub.docker.com/r/devmtl/ghostfire/tags/)
-
-#### edge branch (dev) tags 🐳
-
-This is reserved for development and testing.
-
-```
-devmtl/ghostfire:edge_5.120.4_<hash>_<date>
-devmtl/ghostfire:edge_5.120.4
-devmtl/ghostfire:edge
-```
 
 ## Architecture & Security
 
@@ -222,13 +212,9 @@ Critical paths for data persistence:
 
 Let's understand our processes. In this post « [How we update hundreds of Ghost's websites on Docker Swarm?](https://firepress.org/en/how-we-update-hundreds-of-ghosts-websites-on-docker-swarm/) », we explain how we deploy Ghost in production and which best practices we do follow.
 
-## Enhanced unit tests during the CI
+## Test the image locally
 
-![unit-test-a](https://user-images.githubusercontent.com/6694151/61649557-b80a0800-ac7f-11e9-85b7-425e5456cb2d.jpg)
-<br>
-![unit-test-b](https://user-images.githubusercontent.com/6694151/61649559-b80a0800-ac7f-11e9-9154-cd6f5264af71.jpg)
-<br>
-![unit-test-c](https://user-images.githubusercontent.com/6694151/61649558-b80a0800-ac7f-11e9-9638-4b3241e4dcee.jpg)
+Install the pinned tools with `mise install`, then run `just check`. It lints the repo, builds the image with Podman, boots it on SQLite, and scans it with Grype. [AGENTS.md](AGENTS.md) lists every recipe.
 
 <br>
 
