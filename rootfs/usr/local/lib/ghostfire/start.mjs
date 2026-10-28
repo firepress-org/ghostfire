@@ -1,6 +1,8 @@
 // Seeds an empty or partial content volume from content.orig, then starts Ghost.
-// Existing entries are never overwritten. The default themes stay symlinks into
-// the image, so they update with it.
+// Existing entries are never overwritten. The default themes stay symlinks to
+// /var/lib/ghost/current, so they update with the image. Without
+// verbatimSymlinks, cpSync would point them at the versioned directory, which
+// the next Ghost version does not have.
 import { cpSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -9,7 +11,7 @@ const content = join(install, 'content');
 const orig = join(install, 'content.orig');
 
 const seed = (from, to) => {
-  if (!existsSync(to)) cpSync(from, to, { recursive: true });
+  if (!existsSync(to)) cpSync(from, to, { recursive: true, verbatimSymlinks: true });
 };
 
 for (const entry of readdirSync(orig, { withFileTypes: true })) {
