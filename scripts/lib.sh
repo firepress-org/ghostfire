@@ -22,7 +22,6 @@ fetch() {
 
 status_of() { tail -n 1 <<<"$1"; }
 
-# Starts the container from the given podman run arguments and records its port.
 start() {
 	started=$EPOCHREALTIME
 	podman run -d --name "$name" -p 127.0.0.1::2368 "$@" >/dev/null
@@ -52,7 +51,8 @@ print_timing() {
 		$((elapsed_us / 1000000)) $((elapsed_us / 100000 % 10))
 }
 
-# Checks that each path answers 200 and prints the site version from the last one.
+# Checks that <base>ghost/ and the admin site API answer 200, and sets version
+# from the API response.
 check_admin() {
 	local base=$1 path response status
 	for path in "${base}ghost/" "${base}ghost/api/admin/site/"; do

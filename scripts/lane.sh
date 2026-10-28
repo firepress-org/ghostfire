@@ -81,9 +81,10 @@ trap cleanup EXIT
 
 echo "lane: $lane, image $image, url $url, container $name"
 cp -a "$src/content" "$work/content"
-# keep-id maps the host user to UID 1000, so the container can write the copy.
+# keep-id:uid=1000 maps the host user to UID 1000, so the container can write
+# the copy whatever the host UID is.
 # Ghost logs at info so the migrations show; the site config sets the rest.
-start --userns keep-id --user 1000:1000 --memory 300m \
+start --userns keep-id:uid=1000,gid=1000 --user 1000:1000 --memory 300m \
 	-v "$work/content:/var/lib/ghost/content" \
 	-v "$config:/var/lib/ghost/config.production.json:ro" \
 	-v /etc/localtime:/etc/localtime:ro \
