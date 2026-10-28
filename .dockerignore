@@ -1,3 +1,2 @@
-# Deny everything, then allow only the files the Dockerfile copies.
 *
 !rootfs/

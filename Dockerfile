@@ -21,15 +21,15 @@ RUN apt-get update \
 	&& npm cache clean --force \
 	&& install -d -o node -g node /var/lib/ghost
 
-# The node user of the base image owns the install, as Ghost-CLI requires.
+# Ghost-CLI needs an install directory that the node user can write.
 # hadolint ignore=DL3066
 USER node
 WORKDIR /var/lib/ghost
 
-# The MySQL flags only let the install skip its setup; the config makes SQLite
-# the default database. The empty content directory is made outside
-# /var/lib/ghost, because COPY --chown sets the owner only of a directory it
-# creates.
+# --no-setup skips Ghost-CLI's setup, and the remote --dbhost lets the install
+# skip its local MySQL check. The config makes SQLite the default database. The
+# empty content directory is made outside /var/lib/ghost, because Buildah's
+# COPY --chown sets the owner only of a directory it creates.
 RUN ghost install "${GHOST_VERSION}" --db mysql --dbhost mysql --no-setup --no-stack --no-prompt --dir /var/lib/ghost \
 	&& ghost config --no-prompt --ip '::' --port 2368 --url 'http://localhost:2368' \
 	&& ghost config paths.contentPath /var/lib/ghost/content \
