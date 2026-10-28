@@ -1,0 +1,4 @@
+# The builder installs build tools from Debian without versions: they are
+# rebuilt on each point release and never reach the runtime image.
+ignored:
+  - DL3008
