@@ -64,10 +64,3 @@ jobs:
       - env:
           TAG: ${{ github.ref_name }}
         run: just push --mutable
-
-      - uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: devmtl/ghostfire
-          readme-filepath: README.md

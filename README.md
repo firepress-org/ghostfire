@@ -85,9 +85,8 @@ The image is about 620 MB.
 2. It logs in to Docker Hub, then runs `just push --immutable`, which pushes the image that `just check` tested under its immutable tag, such as `5.130.6_1a2b3c4_2026-10-28_12H00`. It stops when that tag already exists
 3. It signs the build provenance of that digest with `actions/attest`
 4. It runs `just push --mutable`, which points the version tag and `edge` at the same digest. It moves them only when git lists no release tag newer than this one, so a rerun of an older release publishes its immutable tag alone
-5. It copies this README to the Docker Hub description
 
-A merge to `master` publishes nothing. The workflow never moves `stable`.
+A merge to `master` publishes nothing. The workflow never moves `stable`. It does not update the Docker Hub description either, because that API needs a token with delete scope. When this README changes, the maintainer copies it to the Docker Hub description by hand before pushing the release tag.
 
 A fix to a base image ships as a rebuild. Dependabot opens one grouped PR a month for the base-image digests, and one for the GitHub Actions. After the base-image PR merges, push the next `-N` tag of the same Ghost version, such as `5.130.6-1`, then `5.130.6-2`.
 
