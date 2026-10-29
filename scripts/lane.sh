@@ -75,12 +75,7 @@ client=$(jq -r '.database.client // "none"' "$config")
 	exit 2
 }
 url=$(jq -er .url "$config")
-proto=${url%%://*}
-rest=${url#*://}
-host=${rest%%/*}
-path=/
-[[ $rest == */* ]] && path=/${rest#*/}
-path=${path%/}/
+parse_url "$url"
 name=ghostfire-lane-$lane-$$
 work=$(mktemp -d "${TMPDIR:-/tmp}/ghostfire-lane.XXXXXX")
 

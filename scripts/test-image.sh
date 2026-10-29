@@ -5,10 +5,11 @@ usage() {
 	cat <<'EOF'
 Usage: scripts/test-image.sh [--timing] [--help]
 
-Start IMAGE with SQLite on a fresh volume, wait for HTTP 200 on /, then check
-that / shows the default site text, and that /ghost/ and
-/ghost/api/admin/site/ answer 200. On failure, print the container logs and
-exit 1. The container and its volume are removed on exit.
+Start IMAGE with SQLite on a fresh volume, wait for HTTP 200 on the path of
+GHOST_URL, then check that the page shows the default site text, and that
+<path>ghost/ and <path>ghost/api/admin/site/ answer 200. On failure, print
+the container logs and exit 1. The container and its volume are removed on
+exit.
 
 Environment:
   IMAGE      image to test (default ghostfire:local)
@@ -42,9 +43,7 @@ source "$(dirname "$0")/lib.sh"
 
 image=${IMAGE:-ghostfire:local}
 url=${GHOST_URL:-http://localhost:2368}
-proto=${url%%://*}
-host=${url#*://}
-host=${host%%/*}
+parse_url "$url"
 name=ghostfire-test-$$
 
 cleanup() {
@@ -62,11 +61,11 @@ start -v "$name:/var/lib/ghost/content" \
 	-e database__connection__filename=/var/lib/ghost/content/data/ghost.db \
 	"$image"
 
-home=$(wait_for_200 / "${TIMEOUT:-90}")
+home=$(wait_for_200 "$path" "${TIMEOUT:-90}")
 if $timing; then print_timing; fi
-echo "/ 200"
+echo "$path 200"
 grep -q 'Thoughts, stories and ideas' <<<"$home" ||
-	fail "/ lacks the text 'Thoughts, stories and ideas'"
+	fail "$path lacks the text 'Thoughts, stories and ideas'"
 
-check_admin /
+check_admin "$path"
 echo "test ok, Ghost $version"

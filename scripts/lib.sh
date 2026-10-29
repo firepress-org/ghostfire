@@ -1,11 +1,23 @@
 # shellcheck shell=bash
-# shellcheck disable=SC2154 # the caller sets name and host
-# Shared by test-image.sh and lane.sh. The caller sets name (the container),
-# host (the Host header), and optionally proto (sent as X-Forwarded-Proto).
+# shellcheck disable=SC2154 # the caller sets name
+# Shared by test-image.sh and lane.sh. The caller sets name (the container) and
+# calls parse_url, which sets host (the Host header), proto (sent as
+# X-Forwarded-Proto), and path.
 
 port=
 proto=
 started=
+
+# Sets proto, host, and path, with a trailing slash, from a url such as
+# https://example.com/blog.
+parse_url() {
+	local rest=${1#*://}
+	proto=${1%%://*}
+	host=${rest%%/*}
+	path=/
+	if [[ $rest == */* ]]; then path=/${rest#*/}; fi
+	path=${path%/}/
+}
 
 fail() {
 	echo "FAIL: $*" >&2

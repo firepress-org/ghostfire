@@ -29,5 +29,9 @@ lint:
     just --fmt --check --unstable
 
 # Run lint, build, test, and scan, in that order
-check: lint build test scan
+check: _local lint build test scan
     @echo "check ok, $(cat .cache/scan/summary)"
+
+# check tests and scans the image it builds, so IMAGE must name that image
+_local:
+    @[[ ${IMAGE:-ghostfire:local} == ghostfire:local ]] || { echo "check: IMAGE is $IMAGE; unset it, since check tests and scans the ghostfire:local it builds" >&2; exit 2; }

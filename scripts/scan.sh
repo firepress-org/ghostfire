@@ -39,9 +39,9 @@ report=$out/$slug.grype.json
 
 mkdir -p "$out"
 rm -f -- "$archive"
+trap 'rm -f -- "$archive"' EXIT
 podman save -q --format oci-archive -o "$archive" "$image"
 grype "oci-archive:$archive" -o json --file "$report" --quiet
-rm -f -- "$archive"
 
 # Counts per layer, keyed by severity initial; fixC to fixL count those with a fix.
 counts=$(jq -c '

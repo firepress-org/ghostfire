@@ -6,10 +6,11 @@ This repository builds the `devmtl/ghostfire` image of Ghost.
 
 - Install the pinned tools with `mise install`, then run `just check`. It runs `lint`, `build`, `test`, and `scan`, in that order, and ends with a line such as `check ok, os C<n>/H<n>, npm C<n>/H<n>`, the Critical and High counts of each layer
 - Use Podman. The recipes call `podman`, never `docker`
-- `just test`, `just lane`, and `just scan` act on the image that `IMAGE` names. The default is `ghostfire:local`, the image that `just build` makes. For example, `IMAGE=docker.io/devmtl/ghostfire:stable just test`
+- The scripts need Bash 5 or newer. `mise.toml` does not install Bash, and macOS ships Bash 3.2
+- `just test`, `just lane`, and `just scan` act on the image that `IMAGE` names. The default is `ghostfire:local`, the image that `just build` makes. For example, `IMAGE=docker.io/devmtl/ghostfire:stable just test`. `just check` refuses any other `IMAGE`, since it tests and scans the image it builds
 - `just lane <name>` runs the image on a scratch copy of a real site. Each site lives in `~/.cache/ghostfire-lanes/<name>/`, with `content/` and `config.production.json`
 - Scan reports land in `.cache/scan/`, which git ignores
-- Each script prints its usage with `--help`
+- Each script you run prints its usage with `--help`. `scripts/lib.sh` holds the helpers they source
 
 ## Where each version lives
 
