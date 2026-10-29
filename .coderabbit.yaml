@@ -30,8 +30,11 @@ reviews:
   abort_on_close: true
   disable_cache: false
   auto_review:
-    enabled: true
-    auto_incremental_review: true
+    # An agent posts `@coderabbitai review` once the PR is ready.
+    # A review on every push spent the free quota on intermediate
+    # commits (#606, #607, #609).
+    enabled: false
+    auto_incremental_review: false
     ignore_title_keywords: []
     labels: []
     drafts: false
