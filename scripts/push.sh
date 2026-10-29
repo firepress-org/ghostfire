@@ -11,9 +11,10 @@ scripts/tags.sh prints, and write the pushed digest to .cache/push/digest.
 Then point the other tags, the Ghost version and edge, at that digest. The
 release workflow attests the digest between the two steps.
 
-The second step moves those tags only when TAG is the newest release tag in
-git, so a rerun of an older release cannot move them back. Exit 1 when
-ghostfire:local was not built from HEAD, or when a tag ends on another digest.
+With TAG set, the second step moves those tags only when git lists no
+release tag newer than TAG, so a rerun of an older release cannot move them
+back. Exit 1 when ghostfire:local was not built from HEAD, when git lists no
+release tag, or when a tag ends on another digest.
 
 Environment:
   REPO  target repository, such as docker.io/devmtl/ghostfire (required;
@@ -66,13 +67,14 @@ fi
 if $move_tags; then
 	digest=$(<"$out/digest")
 	if [[ -n ${TAG:-} ]]; then
-		newest=$(git tag --list '5.*.*' --sort=-version:refname | head -n 1)
-		[[ -n $newest ]] || {
+		releases=$(git tag --list '5.*.*')
+		[[ -n $releases ]] || {
 			echo "push: git lists no release tag; fetch the tags first" >&2
 			exit 1
 		}
-		if [[ $TAG != "$newest" ]]; then
-			echo "push: $TAG is older than $newest, so the version tag and edge stay where they are"
+		newest=$(printf '%s\n' "$releases" "$TAG" | sort -V | tail -n 1)
+		if [[ $newest != "$TAG" ]]; then
+			echo "push: $newest is newer than $TAG, so the version tag and edge stay where they are"
 			exit 0
 		fi
 	fi
