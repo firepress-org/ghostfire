@@ -82,9 +82,10 @@ The image is about 620 MB.
 `.github/workflows/release.yml` runs only when a tag such as `5.130.6` is pushed. It runs one job on `ubuntu-24.04`, for `linux/amd64`, with Podman:
 
 1. It installs the tools pinned in `mise.toml`, then runs `just check`
-2. It logs in to Docker Hub, then runs `just push`, which pushes the image that `just check` tested
-3. It signs the build provenance of the pushed digest with `actions/attest`
-4. It copies this README to the Docker Hub description
+2. It logs in to Docker Hub, then runs `just push --immutable`, which pushes the image that `just check` tested under its immutable tag, such as `5.130.6_1a2b3c4_2026-10-28_12H00`
+3. It signs the build provenance of that digest with `actions/attest`
+4. It runs `just push --mutable`, which points the version tag and `edge` at the same digest. It moves them only when the release tag is the newest one in git, so a rerun of an older release publishes its immutable tag alone
+5. It copies this README to the Docker Hub description
 
 A merge to `master` publishes nothing. The workflow never moves `stable`.
 

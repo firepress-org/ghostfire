@@ -1,7 +1,8 @@
 # Publish the image only when a release tag is pushed. The tag is the Ghost
 # version, such as 5.130.6, or the version and -N, such as 5.130.6-2, for a
 # rebuild with new base images. The job pushes the image that `just check`
-# tested, then signs its build provenance.
+# tested under its immutable tag, signs its build provenance, then moves the
+# version tag and edge to it.
 name: release
 
 on:
@@ -30,6 +31,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # push.sh compares the release tag with every other one.
+          fetch-depth: 0
 
       # A release must not restore tools from a cache that another run wrote.
       - uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
@@ -48,7 +51,7 @@ jobs:
         env:
           TAG: ${{ github.ref_name }}
         run: |
-          just push
+          just push --immutable
           echo "digest=$(cat .cache/push/digest)" >>"$GITHUB_OUTPUT"
 
       - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
@@ -56,6 +59,11 @@ jobs:
           subject-name: ${{ env.REPO }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+      # The version tag and edge move only once the digest has its provenance.
+      - env:
+          TAG: ${{ github.ref_name }}
+        run: just push --mutable
 
       - uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
         with:

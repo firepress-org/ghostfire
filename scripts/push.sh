@@ -3,12 +3,17 @@ set -euo pipefail
 
 usage() {
 	cat <<'EOF'
-Usage: scripts/push.sh [--help]
+Usage: scripts/push.sh [--immutable | --mutable] [--help]
 
-Push ghostfire:local, the image that `just check` tested, to REPO under each
-tag that scripts/tags.sh prints. Write the pushed digest to
-.cache/push/digest. Exit 1 when ghostfire:local was not built from HEAD, or
-when two tags get different digests.
+Push ghostfire:local, the image that `just check` tested, to REPO in two
+steps. First, push it under its immutable tag, the first tag that
+scripts/tags.sh prints, and write the pushed digest to .cache/push/digest.
+Then point the other tags, the Ghost version and edge, at that digest. The
+release workflow attests the digest between the two steps.
+
+The second step moves those tags only when TAG is the newest release tag in
+git, so a rerun of an older release cannot move them back. Exit 1 when
+ghostfire:local was not built from HEAD, or when a tag ends on another digest.
 
 Environment:
   REPO  target repository, such as docker.io/devmtl/ghostfire (required;
@@ -17,12 +22,18 @@ Environment:
         Ghost version
 
 Options:
-  --help  print this help and exit
+  --immutable  run only the first step
+  --mutable    run only the second step, on the digest in .cache/push/digest
+  --help       print this help and exit
 EOF
 }
 
+push_immutable=true
+move_tags=true
 case ${1:-} in
 "") ;;
+--immutable) move_tags=false ;;
+--mutable) push_immutable=false ;;
 -h | --help)
 	usage
 	exit 0
@@ -36,27 +47,41 @@ esac
 repo=${REPO:?set REPO, or run through just push}
 image=ghostfire:local
 out=.cache/push
-
-revision=$(podman image inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$image")
-head=$(git rev-parse --short HEAD)
-[[ $revision == "$head" ]] || {
-	echo "push: $image was built from $revision, not HEAD $head; run just check" >&2
-	exit 1
-}
-
 tags=$("$(dirname "$0")/tags.sh" ${TAG:+--tag "$TAG"})
-mkdir -p "$out"
-digest=
-while read -r tag; do
-	podman tag "$image" "$repo:$tag"
-	podman push --digestfile "$out/digest-$tag" "$repo:$tag"
-	pushed=$(<"$out/digest-$tag")
-	[[ -z $digest || $pushed == "$digest" ]] || {
-		echo "push: $repo:$tag got $pushed, not $digest" >&2
+
+if $push_immutable; then
+	revision=$(podman image inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$image")
+	head=$(git rev-parse --short HEAD)
+	[[ $revision == "$head" ]] || {
+		echo "push: $image was built from $revision, not HEAD $head; run just check" >&2
 		exit 1
 	}
-	digest=$pushed
-	echo "push: $repo:$tag $digest"
-done <<<"$tags"
-printf '%s\n' "$digest" >"$out/digest"
-echo "push: digest $digest written to $out/digest"
+	tag=$(head -n 1 <<<"$tags")
+	mkdir -p "$out"
+	podman tag "$image" "$repo:$tag"
+	podman push --digestfile "$out/digest" "$repo:$tag"
+	echo "push: $repo:$tag $(<"$out/digest")"
+fi
+
+if $move_tags; then
+	digest=$(<"$out/digest")
+	if [[ -n ${TAG:-} ]]; then
+		newest=$(git tag --list '5.*.*' --sort=-version:refname | head -n 1)
+		[[ -n $newest ]] || {
+			echo "push: git lists no release tag; fetch the tags first" >&2
+			exit 1
+		}
+		if [[ $TAG != "$newest" ]]; then
+			echo "push: $TAG is older than $newest, so the version tag and edge stay where they are"
+			exit 0
+		fi
+	fi
+	while read -r tag; do
+		crane tag "$repo@$digest" "$tag"
+		[[ $(crane digest "$repo:$tag") == "$digest" ]] || {
+			echo "push: $repo:$tag does not point at $digest" >&2
+			exit 1
+		}
+		echo "push: $repo:$tag $digest"
+	done < <(tail -n +2 <<<"$tags")
+fi

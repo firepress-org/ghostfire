@@ -50,9 +50,9 @@ _local:
 tags:
     scripts/tags.sh ${TAG:+--tag "$TAG"}
 
-# Push ghostfire:local to REPO under the release tags; the digest goes to .cache/push/digest
-push:
-    scripts/push.sh
+# Push ghostfire:local to REPO: its immutable tag, then the version tag and edge (see scripts/push.sh --help)
+push *args:
+    scripts/push.sh {{ args }}
 
 # Point stable at the digest of a tag in REPO; the operator runs it from a workstation
 promote tag:
