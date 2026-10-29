@@ -47,9 +47,10 @@
 
 ## Breaking change in 5.130.6
 
-This notice is for users of the `stable` and `edge` tags. From 5.130.6 on, the image runs Ghost on a distroless Node 22 runtime. It has no shell, no `curl`, and no `gosu`.
+This notice is for users of the `stable` and `edge` tags. `edge` moves to 5.130.6 when it is released. `stable` moves later, when the maintainer promotes it. From 5.130.6 on, the image runs Ghost on a distroless Node 22 runtime. It has no shell, no `curl`, and no `gosu`.
 
-- A healthcheck that runs `curl` inside the container fails, so the container turns `unhealthy`. An orchestrator that restarts unhealthy containers then restarts Ghost in a loop. Remove your `curl` healthcheck. The image has its own, described in [Health check](#health-check)
+- A healthcheck that runs `curl` inside the container fails, so the container turns `unhealthy`. An orchestrator that restarts unhealthy containers then restarts Ghost in a loop. Remove your `curl` healthcheck when you move to 5.130.6. The image has its own, described in [Health check](#health-check)
+- The image starts Ghost itself, with Node as its entrypoint. Remove any `command` or `entrypoint` override, such as `node current/index.js`: it fails with `Cannot find module`
 - `docker exec <container> sh` fails with `executable file not found`. Use `docker cp` to read files
 - The image starts as UID 1000 and GID 1000, never as root. The content volume must be writable by that user. Volumes made by earlier images already are. If you ran an earlier image as root with a volume owned by root, run `chown -R 1000:1000` on the volume once
 - The image no longer sets a time zone. Mount `/etc/localtime` read-only to set one
@@ -170,7 +171,7 @@ devmtl/ghostfire:5.130.6                 # the latest build of 5.130.6
 devmtl/ghostfire:edge                    # the latest release
 ```
 
-`stable` moves only when the maintainer runs `just promote <tag>`, after the release has run well on a real site. A `-N` rebuild pushes a new `5.130.6_<sha7>_<date>` tag and moves `5.130.6` and `edge`.
+`stable` moves only when the maintainer runs `just promote <tag>` with the immutable tag that has run well on a real site. A `-N` rebuild pushes a new `5.130.6_<sha7>_<date>` tag and moves `5.130.6` and `edge`.
 
 Find the latest tags on **DockerHub** here:
 [https://hub.docker.com/r/devmtl/ghostfire/tags/](https://hub.docker.com/r/devmtl/ghostfire/tags/)
@@ -192,7 +193,7 @@ At start, `start.mjs` copies each missing directory and default theme from `cont
 - **Read-only code**: the Ghost code is owned by root
 - **Minimal attack surface**: a distroless runtime, with no shell, no package manager, and no network tools
 - **Vulnerability scanning**: `just scan` runs Grype and fails on any Critical or High finding with a fix in the OS layer
-- **Advisories**: [SECURITY.md](SECURITY.md) lists the Ghost 5 advisories that have no 5.x fix, and how to report a problem
+- **Advisories**: [SECURITY.md](https://github.com/firepress-org/ghostfire/blob/master/SECURITY.md) lists the Ghost 5 advisories that have no 5.x fix, and how to report a problem
 
 ### Volume Management
 
@@ -214,7 +215,7 @@ Let's understand our processes. In this post « [How we update hundreds of Ghost
 
 ## Test the image locally
 
-Install the pinned tools with `mise install`, then run `just check`. It lints the repo, builds the image with Podman, boots it on SQLite, and scans it with Grype. [AGENTS.md](AGENTS.md) lists every recipe.
+Install the pinned tools with `mise install`, then run `just check`. It lints the repo, builds the image with Podman, boots it on SQLite, and scans it with Grype. [AGENTS.md](https://github.com/firepress-org/ghostfire/blob/master/AGENTS.md) lists every recipe.
 
 <br>
 

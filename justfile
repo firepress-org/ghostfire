@@ -54,6 +54,6 @@ tags:
 push *args:
     scripts/push.sh {{ args }}
 
-# Point stable at the digest of a tag in REPO; the operator runs it from a workstation
+# Point stable at the digest of a tag in REPO; pass the immutable tag the canary ran. The operator runs it from a workstation
 promote tag:
     digest="$(crane digest "$REPO:{{ tag }}")"; crane tag "$REPO@$digest" stable; echo "promote: $REPO:stable -> $digest"
