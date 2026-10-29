@@ -8,13 +8,17 @@ Usage: scripts/push.sh [--immutable | --mutable] [--help]
 Push ghostfire:local, the image that `just check` tested, to REPO in two
 steps. First, push it under its immutable tag, the first tag that
 scripts/tags.sh prints, and write the pushed digest to .cache/push/digest.
-Then point the other tags, the Ghost version and edge, at that digest. The
-release workflow attests the digest between the two steps.
+That tag names the minute, so a second push in the same minute stops before
+it can replace the first image. Then point the other tags, the Ghost version
+and edge, at that digest. The release workflow attests the digest between
+the two steps.
 
 With TAG set, the second step moves those tags only when git lists no
 release tag newer than TAG, so a rerun of an older release cannot move them
-back. Exit 1 when ghostfire:local was not built from HEAD, when git lists no
-release tag, or when a tag ends on another digest.
+back. A release tag is <x.y.z> or <x.y.z>-N, the tags that scripts/tags.sh
+accepts. Exit 1 when ghostfire:local was not built from HEAD, when the
+immutable tag already exists, when git lists no release tag, or when a tag
+ends on another digest.
 
 Environment:
   REPO  target repository, such as docker.io/devmtl/ghostfire (required;
@@ -58,6 +62,10 @@ if $push_immutable; then
 		exit 1
 	}
 	tag=$(head -n 1 <<<"$tags")
+	if crane digest "$repo:$tag" >/dev/null 2>&1; then
+		echo "push: $repo:$tag already exists, and an immutable tag never moves; push again in the next minute" >&2
+		exit 1
+	fi
 	mkdir -p "$out"
 	podman tag "$image" "$repo:$tag"
 	podman push --digestfile "$out/digest" "$repo:$tag"
@@ -67,7 +75,7 @@ fi
 if $move_tags; then
 	digest=$(<"$out/digest")
 	if [[ -n ${TAG:-} ]]; then
-		releases=$(git tag --list '5.*.*')
+		releases=$(git tag --list '5.*.*' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[1-9][0-9]*)?$' || true)
 		[[ -n $releases ]] || {
 			echo "push: git lists no release tag; fetch the tags first" >&2
 			exit 1
