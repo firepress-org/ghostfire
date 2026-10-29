@@ -39,12 +39,11 @@ RUN ghost install "${GHOST_VERSION}" --db mysql --dbhost mysql --no-setup --no-s
 	&& mv content content.orig \
 	&& mkdir /tmp/content
 
-# Ghost-CLI skips the optional sqlite3 without an error, so add it and fail
-# the build unless both native modules load.
+# Ghost-CLI installs the optional sqlite3 when it can build it, and skips it
+# without an error when it cannot, as without python3-setuptools. Fail the
+# build unless both native modules load.
 WORKDIR /var/lib/ghost/current
-RUN yarn add "sqlite3@$(node -p 'require("./package.json").optionalDependencies.sqlite3')" --force \
-	&& yarn cache clean \
-	&& node -e 'require("sqlite3"); if (!require("@tryghost/image-transform").canTransformFiles()) process.exit(1)'
+RUN node -e 'require("sqlite3"); if (!require("@tryghost/image-transform").canTransformFiles()) process.exit(1)'
 
 FROM gcr.io/distroless/nodejs22-debian13:nonroot@sha256:10747a1323be68f206aed893599d43e6697ad67257e7c42703553f99fbce3d33
 
