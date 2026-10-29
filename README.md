@@ -83,11 +83,12 @@ The image is about 620 MB.
 `.github/workflows/release.yml` runs only when a tag such as `5.130.6` is pushed. It runs one job on `ubuntu-24.04`, for `linux/amd64`, with Podman:
 
 1. It installs the tools pinned in `mise.toml`, then runs `just check`
-2. It logs in to Docker Hub, then runs `just push --immutable`, which pushes the image that `just check` tested under its immutable tag, such as `5.130.6_1a2b3c4_2026-10-28_12H00`. It stops when that tag already exists
-3. It signs the build provenance of that digest with `actions/attest`
-4. It runs `just push --mutable`, which points the version tag and `edge` at the same digest. It moves them only when git lists no release tag newer than this one, so a rerun of an older release publishes its immutable tag alone
+2. It logs in to Docker Hub and copies this README to the Docker Hub description, so the breaking-change notice is live before any tag moves
+3. It runs `just push --immutable`, which pushes the image that `just check` tested under its immutable tag, such as `5.130.6_1a2b3c4_2026-10-28_12H00`. It stops when that tag already exists
+4. It signs the build provenance of that digest with `actions/attest`
+5. It runs `just push --mutable`, which points the version tag and `edge` at the same digest. It moves them only when git lists no release tag newer than this one, so a rerun of an older release publishes its immutable tag alone
 
-A merge to `master` publishes nothing. The workflow never moves `stable`. It does not update the Docker Hub description either, because that API needs a token with delete scope. When this README changes, the maintainer copies it to the Docker Hub description by hand before pushing the release tag.
+A merge to `master` publishes nothing. The workflow never moves `stable`.
 
 A fix to a base image ships as a rebuild. Dependabot opens one grouped PR a month for the base-image digests, and one for the GitHub Actions. After the base-image PR merges, push the next `-N` tag of the same Ghost version, such as `5.130.6-1`, then `5.130.6-2`.
 

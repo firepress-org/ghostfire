@@ -1,8 +1,8 @@
 # Publish the image only when a release tag is pushed. The tag is the Ghost
 # version, such as 5.130.6, or the version and -N, such as 5.130.6-2, for a
-# rebuild with new base images. The job pushes the image that `just check`
-# tested under its immutable tag, signs its build provenance, then moves the
-# version tag and edge to it.
+# rebuild with new base images. The job copies README.md to the Docker Hub
+# description, pushes the image that `just check` tested under its immutable
+# tag, signs its build provenance, then moves the version tag and edge to it.
 name: release
 
 on:
@@ -41,11 +41,20 @@ jobs:
 
       - run: just check
 
-      # Podman reads this login from ~/.docker/config.json.
+      # DOCKERHUB_PASSWORD is the organization secret that the earlier
+      # workflow used. Podman reads this login from ~/.docker/config.json.
       - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: devmtl
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      # Before any push, so the breaking-change notice is live before edge moves.
+      - uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
+        with:
+          username: devmtl
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: devmtl/ghostfire
+          readme-filepath: README.md
 
       - id: push
         env:
