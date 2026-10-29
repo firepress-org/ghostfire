@@ -64,9 +64,10 @@ config=$src/config.production.json
 }
 
 # A lane must never reach a real database: only SQLite, on the scratch copy.
-client=$(jq -r '.database.client // "sqlite3"' "$config")
+# Ghost's production default is MySQL, so the config must say sqlite3.
+client=$(jq -r '.database.client // "none"' "$config")
 [[ $client == sqlite3 ]] || {
-	echo "lane: $config uses the database client $client; lanes run only SQLite sites" >&2
+	echo "lane: $config sets the database client $client; a lane needs sqlite3" >&2
 	exit 2
 }
 url=$(jq -er .url "$config")
@@ -90,6 +91,8 @@ echo "lane: $lane, image $image, url $url, container $name"
 # send writes back to the lane data.
 mkdir "$work/content"
 cp -a "$src/content/." "$work/content/"
+# Copies of real sites hold real members and mail settings, so every mail goes
+# to a closed port: the environment beats the config and the database.
 # keep-id:uid=1000 maps the host user to UID 1000, so the container can write
 # the copy whatever the host UID is.
 # Ghost logs at info so the migrations show; the site config sets the rest.
@@ -100,6 +103,12 @@ start --userns keep-id:uid=1000,gid=1000 --user 1000:1000 --memory 300m \
 	-e url="$url" \
 	-e NODE_ENV=production \
 	-e logging__level=info \
+	-e mail__transport=SMTP \
+	-e mail__options__host=127.0.0.1 \
+	-e mail__options__port=9 \
+	-e bulkEmail__mailgun__apiKey=lane \
+	-e bulkEmail__mailgun__domain=lane.invalid \
+	-e bulkEmail__mailgun__baseUrl=http://127.0.0.1:9/v3 \
 	"$image"
 
 wait_for_200 "$path" "${TIMEOUT:-180}" >/dev/null
