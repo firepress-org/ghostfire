@@ -6,9 +6,11 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 default:
     @just --list
 
-# Build v5/Dockerfile into ghostfire:local
+# Build the Dockerfile into ghostfire:local
 build:
-    podman build --format docker -f v5/Dockerfile -t ghostfire:local .
+    podman build --format docker -f Dockerfile -t ghostfire:local \
+        --label org.opencontainers.image.revision="$(git rev-parse --short HEAD)" \
+        --label org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%SZ)" .
 
 # Boot IMAGE on SQLite and probe the home page and the admin
 test *args:
@@ -18,12 +20,15 @@ test *args:
 lane name *args:
     scripts/lane.sh {{ args }} {{ name }}
 
-# Scan IMAGE with Grype and print the counts per layer
+# Scan IMAGE with Grype; fail on an OS-layer Critical or High finding with a fix
 scan:
-    scripts/scan.sh
+    scripts/scan.sh --gate
 
-# Lint the scripts and the justfile
+# Lint the Dockerfile, the scripts, and the justfile
 lint:
+    hadolint Dockerfile
+    node --check rootfs/usr/local/lib/ghostfire/start.mjs
+    node --check rootfs/usr/local/lib/ghostfire/healthcheck.mjs
     shellcheck scripts/*.sh
     shfmt -d scripts
     just --fmt --check --unstable

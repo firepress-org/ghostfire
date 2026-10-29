@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
 	cat <<'EOF'
-Usage: scripts/scan.sh [--help]
+Usage: scripts/scan.sh [--gate] [--help]
 
 Save IMAGE as an OCI archive, scan it with Grype, and write the JSON report
 to .cache/scan/<image>.grype.json. Print the Critical, High, Medium, and Low
@@ -15,12 +15,15 @@ Environment:
   IMAGE  image to scan (default ghostfire:local)
 
 Options:
+  --gate  exit 1 when the OS layer has a Critical or High finding with a fix
   --help  print this help and exit
 EOF
 }
 
+gate=false
 case ${1:-} in
 "") ;;
+--gate) gate=true ;;
 -h | --help)
 	usage
 	exit 0
@@ -62,3 +65,12 @@ jq -r '
 ' <<<"$counts"
 jq -r '"os C\(.os.C // 0)/H\(.os.H // 0), npm C\(.npm.C // 0)/H\(.npm.H // 0)"' <<<"$counts" >"$out/summary"
 echo "scan: report $report"
+
+if $gate; then
+	fixable=$(jq '(.os.fixC // 0) + (.os.fixH // 0)' <<<"$counts")
+	if ((fixable > 0)); then
+		echo "scan: FAIL, the OS layer has $fixable Critical or High findings with a fix" >&2
+		exit 1
+	fi
+	echo "scan: OS gate ok, no Critical or High finding with a fix"
+fi

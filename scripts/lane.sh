@@ -7,10 +7,12 @@ Usage: scripts/lane.sh [--timing] [--hold SECONDS] [--help] <name>
 
 Run IMAGE on a scratch copy of a real site, the way the hosting stack runs
 it: user 1000:1000, 300 MB of memory, and the site's config.production.json
-and /etc/localtime mounted read-only. Wait for HTTP 200 on the path of the
-config's url, check <path>ghost/ and the admin site API, print the site
-version, then print the container logs. The container and the scratch copy
-are removed on exit, so the lane data is never changed.
+and /etc/localtime mounted read-only, on a read-only root with a /tmp
+tmpfs. Wait for HTTP 200 on the path of the config's url, check
+<path>ghost/ and the admin site API, print the site version and, when the
+image defines a healthcheck, its status, then print the container logs. The
+container and the scratch copy are removed on exit, so the lane data is
+never changed.
 
 The container joins the Podman network ghostfire-lane, created on first use.
 That network has no route out, so the copy cannot call Stripe, Mailgun, or
@@ -107,7 +109,7 @@ cp -a "$src/content/." "$work/content/"
 # keep-id:uid=1000 maps the host user to UID 1000, so the container can write
 # the copy whatever the host UID is.
 # Ghost logs at info so the migrations show; the site config sets the rest.
-start --network "$net" --userns keep-id:uid=1000,gid=1000 --user 1000:1000 --memory 300m \
+start --network "$net" --userns keep-id:uid=1000,gid=1000 --user 1000:1000 --memory 300m --read-only --tmpfs /tmp \
 	-v "$work/content:/var/lib/ghost/content" \
 	-v "$config:/var/lib/ghost/config.production.json:ro" \
 	-v /etc/localtime:/etc/localtime:ro \
@@ -120,6 +122,10 @@ wait_for_200 "$path" "${TIMEOUT:-180}" >/dev/null
 if $timing; then print_timing; fi
 echo "$path 200"
 check_admin "$path"
+if [[ $(podman inspect -f '{{.Config.Healthcheck}}' "$name") != "<nil>" ]]; then
+	podman healthcheck run "$name" >/dev/null || fail "healthcheck reports unhealthy"
+	echo "health: $(podman inspect -f '{{.State.Health.Status}}' "$name")"
+fi
 echo "lane ok, $lane on Ghost $version"
 
 if ((hold > 0)); then
