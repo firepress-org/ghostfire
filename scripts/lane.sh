@@ -12,6 +12,10 @@ config's url, check <path>ghost/ and the admin site API, print the site
 version, then print the container logs. The container and the scratch copy
 are removed on exit, so the lane data is never changed.
 
+The container joins the Podman network ghostfire-lane, created on first use.
+That network has no route out, so the copy cannot call Stripe, Mailgun, or
+its own live url, and the published port still answers.
+
 Environment:
   IMAGE      image to run (default ghostfire:local)
   LANES_DIR  lane data, one <name>/ holding content/ and
@@ -86,29 +90,35 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# A copy of a real site keeps its keys, such as Stripe and Mailgun, and its live
+# url, so a lane must not reach the outside. Without a default route, every
+# outbound connection fails at once with ENETUNREACH. DNS stays on, so a lookup
+# does not wait for a timeout. The last check covers a parallel lane that
+# created the network first.
+net=ghostfire-lane
+podman network exists "$net" ||
+	podman network create -o no_default_route=true "$net" >/dev/null ||
+	podman network exists "$net"
+[[ $(podman network inspect -f '{{index .Options "no_default_route"}}' "$net") == true ]] || {
+	echo "lane: the Podman network $net has a default route; remove it and run again" >&2
+	exit 2
+}
+
 echo "lane: $lane, image $image, url $url, container $name"
 # Copy the contents, not the directory, so a symlinked content root cannot
 # send writes back to the lane data.
 mkdir "$work/content"
 cp -a "$src/content/." "$work/content/"
-# Copies of real sites hold real members and mail settings, so every mail goes
-# to a closed port: the environment beats the config and the database.
 # keep-id:uid=1000 maps the host user to UID 1000, so the container can write
 # the copy whatever the host UID is.
 # Ghost logs at info so the migrations show; the site config sets the rest.
-start --userns keep-id:uid=1000,gid=1000 --user 1000:1000 --memory 300m \
+start --network "$net" --userns keep-id:uid=1000,gid=1000 --user 1000:1000 --memory 300m \
 	-v "$work/content:/var/lib/ghost/content" \
 	-v "$config:/var/lib/ghost/config.production.json:ro" \
 	-v /etc/localtime:/etc/localtime:ro \
 	-e url="$url" \
 	-e NODE_ENV=production \
 	-e logging__level=info \
-	-e mail__transport=SMTP \
-	-e mail__options__host=127.0.0.1 \
-	-e mail__options__port=9 \
-	-e bulkEmail__mailgun__apiKey=lane \
-	-e bulkEmail__mailgun__domain=lane.invalid \
-	-e bulkEmail__mailgun__baseUrl=http://127.0.0.1:9/v3 \
 	"$image"
 
 wait_for_200 "$path" "${TIMEOUT:-180}" >/dev/null

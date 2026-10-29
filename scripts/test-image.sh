@@ -42,6 +42,7 @@ source "$(dirname "$0")/lib.sh"
 
 image=${IMAGE:-ghostfire:local}
 url=${GHOST_URL:-http://localhost:2368}
+proto=${url%%://*}
 host=${url#*://}
 host=${host%%/*}
 name=ghostfire-test-$$
