@@ -1,32 +1,37 @@
 version: 2
 updates:
-  # Maintain dependencies for GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      time: "07:00"
-      timezone: "America/New_York"
-    labels:
-      - ":game_die: dependencies"
-      - ":robot: bot"
-
-  # Maintain dependencies for Docker
+  # Dependabot checks the digests of the two base images once a month, in one
+  # group. After its PR merges, a release tag with -N, such as 5.130.6-2,
+  # ships the update.
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       time: "07:00"
       timezone: "America/New_York"
+    groups:
+      docker:
+        patterns:
+          - "*"
+    # A new Node major is a Ghost migration, not a base-image fix.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
     labels:
       - ":game_die: dependencies"
       - ":robot: bot"
-    registries:
-      - dockerhub # This links the Docker ecosystem to the dockerhub registry
 
-registries:
-  dockerhub:
-    type: docker-registry
-    url: https://registry.hub.docker.com
-    username: ${{ needs.myvars.outputs.DOCKERHUB_USER }}
-    password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      time: "07:00"
+      timezone: "America/New_York"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    labels:
+      - ":game_die: dependencies"
+      - ":robot: bot"

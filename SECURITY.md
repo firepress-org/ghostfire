@@ -2,7 +2,15 @@
 
 ## Supported versions
 
-Only the latest image of `devmtl/ghostfire` gets fixes.
+Only the latest release of `devmtl/ghostfire` gets fixes. A fix to a base image ships as the next `-N` release of the same Ghost version, such as `5.130.6-1`, after the monthly Dependabot PR merges.
+
+## Verify an image
+
+Each release from 5.130.6 on carries a signed build provenance. Check it with the GitHub CLI:
+
+```bash
+gh attestation verify oci://docker.io/devmtl/ghostfire:<tag> -R firepress-org/ghostfire
+```
 
 ## Ghost 5 advisories without a 5.x fix
 
