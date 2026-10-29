@@ -17,8 +17,8 @@ With TAG set, the second step moves those tags only when git lists no
 release tag newer than TAG, so a rerun of an older release cannot move them
 back. A release tag is <x.y.z> or <x.y.z>-N, the tags that scripts/tags.sh
 accepts. Exit 1 when ghostfire:local was not built from HEAD, when the
-immutable tag already exists, when git lists no release tag, or when a tag
-ends on another digest.
+immutable tag already exists or the registry does not confirm that it is
+free, when git lists no release tag, or when a tag ends on another digest.
 
 Environment:
   REPO  target repository, such as docker.io/devmtl/ghostfire (required;
@@ -62,8 +62,13 @@ if $push_immutable; then
 		exit 1
 	}
 	tag=$(head -n 1 <<<"$tags")
-	if crane digest "$repo:$tag" >/dev/null 2>&1; then
+	# Only MANIFEST_UNKNOWN proves the tag is free. Any other error, such as a
+	# refused login or a registry outage, could hide an existing tag.
+	if lookup=$(crane digest "$repo:$tag" 2>&1); then
 		echo "push: $repo:$tag already exists, and an immutable tag never moves; push again in the next minute" >&2
+		exit 1
+	elif [[ $lookup != *MANIFEST_UNKNOWN* ]]; then
+		echo "push: cannot tell whether $repo:$tag exists, so nothing is pushed: ${lookup##*$'\n'}" >&2
 		exit 1
 	fi
 	mkdir -p "$out"
