@@ -1,6 +1,6 @@
 // HEALTHCHECK for an image without curl: exits 0 only when the admin site API
-// answers 200. Ghost takes url and admin.url from the environment first, then
-// from config.<NODE_ENV>.json; this does the same.
+// answers 200. Ghost takes url, admin.url, and server.port from the environment
+// first, then from config.<NODE_ENV>.json; this does the same.
 import { readFileSync } from 'node:fs';
 import { get } from 'node:http';
 
@@ -18,6 +18,7 @@ const site = new URL(process.env.url ?? config.url ?? 'http://localhost:2368');
 // With a separate admin.url, Ghost serves the admin API only on that host,
 // still under the path of the site url.
 const admin = new URL(process.env.admin__url ?? config.admin?.url ?? site);
+const port = Number(process.env.server__port ?? config.server?.port ?? 2368);
 const path = `${site.pathname.replace(/\/?$/, '/')}ghost/api/admin/site/`;
 const target = `${admin.host}${path}`;
 
@@ -32,7 +33,7 @@ const fail = (reason) => {
 const request = get(
   {
     host: '127.0.0.1',
-    port: 2368,
+    port,
     path,
     headers: { Host: admin.host, 'X-Forwarded-Proto': admin.protocol.slice(0, -1) },
     timeout: 5000,

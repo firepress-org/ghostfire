@@ -154,7 +154,7 @@ To configure the `config.production.json` refer the [ghost docs](https://docs.gh
 
 #### Health check
 
-The image has its own `HEALTHCHECK`. Every 30 seconds, it requests the admin site API, `<path>ghost/api/admin/site/`, where `<path>` is the path of the site url. It reads the url from the `url` environment variable, or else from the config. It reports `healthy` only when Ghost answers 200. Read the status with:
+The image has its own `HEALTHCHECK`. Every 30 seconds, it requests the admin site API, `<path>ghost/api/admin/site/`, where `<path>` is the path of the site url. It reads the site url, the admin url, and the port from the environment (`url`, `admin__url`, `server__port`), or else from the config, as Ghost does. It reports `healthy` only when Ghost answers 200. Read the status with:
 
 ```bash
 docker inspect --format '{{.State.Health.Status}}' ghostblog
