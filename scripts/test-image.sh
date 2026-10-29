@@ -7,9 +7,9 @@ Usage: scripts/test-image.sh [--timing] [--help]
 
 Start IMAGE with SQLite on a fresh volume, wait for HTTP 200 on the path of
 GHOST_URL, then check that the page shows the default site text, and that
-<path>ghost/ and <path>ghost/api/admin/site/ answer 200. On failure, print
-the container logs and exit 1. The container and its volume are removed on
-exit.
+<path>ghost/ and <path>ghost/api/admin/site/ answer 200. When IMAGE has a
+healthcheck, run it once and require it to pass. On failure, print the
+container logs and exit 1. The container and its volume are removed on exit.
 
 Environment:
   IMAGE      image to test (default ghostfire:local)
@@ -68,4 +68,8 @@ grep -q 'Thoughts, stories and ideas' <<<"$home" ||
 	fail "$path lacks the text 'Thoughts, stories and ideas'"
 
 check_admin "$path"
+if [[ -n $(podman image inspect -f '{{if .Config.Healthcheck}}x{{end}}' "$image") ]]; then
+	podman healthcheck run "$name" || fail "the image healthcheck failed"
+	echo "healthcheck ok"
+fi
 echo "test ok, Ghost $version"
